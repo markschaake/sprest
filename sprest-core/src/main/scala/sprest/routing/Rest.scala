@@ -1,5 +1,6 @@
 package sprest.routing
 
+import spray.http.StatusCodes
 import spray.routing._
 import shapeless._
 import spray.routing.directives.PathMatcher
@@ -38,19 +39,24 @@ trait RestRoutes { this: HttpService =>
       }
     } ~
     path(name / idMatcher) { id =>
-      get {
-        complete(dao.findById(id))
+      get { ctx =>
+        dao.findById(id) match {
+          case Some(m) => ctx.complete(m)
+          case None => ctx.complete(StatusCodes.NotFound)
+        }
       } ~
       (put | post) {
         entity(as[M]) { m =>
           complete(dao.update(m))
         }
       } ~
-      delete {
-        complete {
-          println("Deleting!")
-          dao.remove(id)
-          "deleted"
+      delete { ctx =>
+        dao.findById(id) match {
+          case Some(m) => ctx.complete {
+            dao.remove(id)
+            StatusCodes.OK
+          }
+          case None => ctx.complete(StatusCodes.NotFound)
         }
       }
     }

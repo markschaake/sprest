@@ -44,6 +44,12 @@ class RestSpect extends Specification
       }
     }
 
+    "GET by id does not exists responds with NotFound" in new RoutesContext {
+      Get("/ints/3") ~> intRoutes ~> check {
+        status === NotFound
+      }
+    }
+
     "PUT by id updates model" in new RoutesContext {
       Put("/ints/2", IntModel(Some(2), "2nd")) ~> intRoutes ~> check {
         entityAs[IntModel].name must_== "2nd"
