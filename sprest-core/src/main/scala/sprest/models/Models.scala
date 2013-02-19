@@ -1,23 +1,25 @@
 package sprest.models
 
 import java.util.UUID
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait Model[ID] {
   var id: Id[ID]
 }
 
 trait DAO[M <: Model[ID], ID] {
-  def add(m: M): M
-  def update(m: M): M
+  def add(m: M): Future[M]
+  def update(m: M): Future[M]
   def remove(id: ID)
-  def all: Iterable[M]
-  def findById(id: ID): Option[M]
-  protected def nextId: Option[ID]
+  def all: Future[Iterable[M]]
+  def findById(id: ID): Future[Option[M]]
+  protected def nextId: Option[ID] = None
 }
 
 trait IntId { this: DAO[_, Int] =>
   protected var lastId = 0
-  protected def nextId = {
+  override protected def nextId: Option[Int] = {
     lastId += 1
     Some(lastId)
   }
@@ -25,51 +27,50 @@ trait IntId { this: DAO[_, Int] =>
 
 trait LongId { this: DAO[_, Long] =>
   protected var lastId = 0
-  protected def nextId = {
+  override protected def nextId: Option[Long] = {
     lastId += 1
     Some(lastId)
   }
 }
 
 trait UUIDStringId { this: DAO[_, String] =>
-  protected def nextId = {
-    Some(UUID.randomUUID.toString)
-  }
+  override protected def nextId: Option[String] = Some(UUID.randomUUID.toString)
 }
 
 trait UUIDId { this: DAO[_, UUID] =>
-  protected def nextId = {
-    Some(UUID.randomUUID)
-  }
+  override protected def nextId: Option[UUID] = Some(UUID.randomUUID)
 }
 
 trait MutableListDAO[M <: Model[ID], ID] extends DAO[M, ID] {
 
-  val all = scala.collection.mutable.ListBuffer[M]()
+  private val _all = scala.collection.mutable.ListBuffer[M]()
 
-  def add(m: M) = {
+  def all = Future.successful { _all }
+
+  def add(m: M) = Future.successful {
     m.id = nextId
-    all += m
+    _all += m
     m
   }
 
-  def remove(id: ID) = {
-    findById(id) foreach { found =>
-      all -= found
+  def remove(id: ID) {
+    findById(id).onSuccess {
+      case Some(found) => _all -= found
+      case None => // do nothing
     }
   }
 
-  def removeAll() = all.clear()
+  def removeAll() = _all.clear()
 
-  def update(m: M) = {
+  def update(m: M) = Future.successful {
     m.id match {
       case Some(id) =>
         remove(id)
-        all += m
+        _all += m
         m
       case None => throw new Exception("ID required for update")
     }
   }
 
-  def findById(id: ID) = all.find(_.id.get == id)
+  def findById(id: ID) = Future.successful(_all.find(_.id.get == id))
 }

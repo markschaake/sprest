@@ -40,7 +40,7 @@ trait RestRoutes { this: HttpService =>
     } ~
     path(name / idMatcher) { id =>
       get { ctx =>
-        dao.findById(id) match {
+        dao.findById(id) map {
           case Some(m) => ctx.complete(m)
           case None => ctx.complete(StatusCodes.NotFound)
         }
@@ -51,7 +51,7 @@ trait RestRoutes { this: HttpService =>
         }
       } ~
       delete { ctx =>
-        dao.findById(id) match {
+        dao.findById(id) map {
           case Some(m) => ctx.complete {
             dao.remove(id)
             StatusCodes.OK
