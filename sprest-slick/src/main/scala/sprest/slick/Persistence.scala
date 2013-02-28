@@ -36,6 +36,11 @@ trait SlickPersistence {
       table.byId(m.id.get).mutate(_.row = m)
       m
     }
+
+  }
+
+  trait AutoIncrementingId { this: ModelTable[_, Int] =>
+    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
   }
 
 }

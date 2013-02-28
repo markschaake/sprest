@@ -8,7 +8,7 @@ import spray.http.StatusCodes._
 import sprest.models._
 import spray.json._
 
-class RestSpect extends Specification
+class RestSpec extends Specification
     with Specs2RouteTest
     with HttpService
     with RestRoutes

@@ -18,12 +18,15 @@ object Build extends Build {
       compile(sprayCan) ++
       compile(sprayRouting) ++
       compile(sprayJson) ++
-      test(specs2))
+      test(specs2) ++
+      test(sprayTestKit))
 
   lazy val sprestSlick = Project("sprest-slick", file("sprest-slick"))
     .dependsOn(core)
     .settings(sprestModuleSettings: _*)
     .settings(libraryDependencies ++=
       compile(slick) ++
+      compile(joda) ++
+      compile(jodaConvert) ++
       test(specs2))
 }
