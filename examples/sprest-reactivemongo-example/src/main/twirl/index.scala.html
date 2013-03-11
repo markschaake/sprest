@@ -1,0 +1,31 @@
+@(title: String)
+
+@main(title) {
+
+} {
+<div class="navbar">
+  <div class="navbar-inner">
+    <a class="brand" href="#">@title</a>
+    <ul class="nav">
+      <li class="active"><a href="#">Home</a></li>
+      <li><a href="#">Link</a></li>
+      <li><a href="#">Link</a></li>
+    </ul>
+  </div>
+</div>
+<div class="container-fluid" ng-app="myModule">
+  <h2>ReactiveMongo TODO using <a href="http://spray.io">Spray</a> and <a href="https://github.com/markschaake/sprest">Sprest</a></h2>
+  <div ng-controller="myController">
+    <ul class="unstyled">
+      <li ng-repeat="todo in todos">
+        <input type="checkbox" ng-model="todo.done" ng-change="updateTodo(todo)">
+        <span class="done-{{todo.done}}">{{todo.text}}</span><a href="#" ng-click="removeTodo(todo)">[x]</a>
+      </li>
+    </ul>
+    <form ng-submit="addTodo()" class="form-inline">
+      <input type="text" ng-model="todoText" placeholder="add todo">
+      <input class="btn btn-primary" type="submit" value="add">
+    </form>
+  </div>
+</div>
+}

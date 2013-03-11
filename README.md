@@ -13,7 +13,7 @@ Required by other sprest libraries. Defines model and DAO conventions as well as
 Provides [Slick](http://slick.typesafe.com/) DAO implementation.
 
 ### sprest-reactivemongo ###
-TODO - will provide [ReactiveMongo](http://reactivemongo.org/) DAO implementation.
+Provides [ReactiveMongo](http://reactivemongo.org/) DAO implementation.
 
 ## SBT ##
 Sprest is published to a GitHub-based repository. To use it, add the following resolver:

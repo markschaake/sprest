@@ -56,7 +56,7 @@ trait MutableListDAO[M <: Model[ID], ID] extends DAO[M, ID] {
   def remove(id: ID) {
     findById(id).onSuccess {
       case Some(found) => _all -= found
-      case None => // do nothing
+      case None        => // do nothing
     }
   }
 

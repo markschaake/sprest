@@ -1,0 +1,26 @@
+@(title: String)(headContent: Html)(body: Html)
+
+@js(src: String) = {
+<script type="text/javascript" src="@src"></script>
+}
+
+@css(src: String) = {
+<link rel="stylesheet" href="@src">
+}
+
+<html>
+	<head>
+		<title>@title</title>
+		@js("js/jquery-1.7.1.min.js")
+		@js("bootstrap/js/bootstrap.js")
+		@js("js/angular.js")
+		@js("js/angular-resource.js")
+		@js("js/main.js")
+		@css("bootstrap/css/bootstrap.css")
+		@css("css/main.css")
+		@headContent
+	</head>
+	<body>
+		@body
+	</body>
+</html>
