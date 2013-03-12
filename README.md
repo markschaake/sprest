@@ -24,5 +24,6 @@ Then you can include sprest libraries:
 
     libraryDependencies += "sprest" %% "sprest-core % "0.1.0-SNAPSHOT"
 	libraryDependencies += "sprest" %% "sprest-slick" % "0.1.0-SNAPSHOT"
+	libraryDependencies += "sprest" %% "sprest-reactivemongo % "0.1.0-SNAPSHOT"
 
-Note: it is unnecessary to explicitly declare the "sprest-core" dependency if you declare a dependency on a library that depends upon the core (such as sprest-slick).
+Note: it is unnecessary to explicitly declare the "sprest-core" dependency if you declare a dependency on a library that depends upon the core (such as sprest-slick or sprest-reactivemongo).
