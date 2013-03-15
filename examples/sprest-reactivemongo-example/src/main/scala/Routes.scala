@@ -11,9 +11,7 @@ trait Routes extends RestRoutes { this: SimpleRoutingApp with spray.httpx.TwirlS
 
   val js = pathPrefix("js" / Rest) { fileName =>
     get {
-      encodeResponse(Gzip) {
-        getFromResource(s"js/$fileName")
-      }
+      encodeResponse(Gzip) { getFromResource(s"js/$fileName") }
     }
   }
 
