@@ -12,13 +12,8 @@ trait ReactiveMongoPersistence {
   import reactivemongo.bson.handlers.{ BSONReader, BSONWriter }
   import reactivemongo.bson.handlers.DefaultBSONHandlers._
 
-  trait CollectionDAO[M <: Model[ID], ID] extends DAO[M, ID] {
-
-    // provided
-    def collection: Collection
-    implicit def bsonReader: BSONReader[M]
-    implicit def bsonWriter: BSONWriter[M]
-    implicit def idMapper: ValueTypeMapper[ID]
+  abstract class CollectionDAO[M <: Model[ID], ID](collection: Collection)(implicit bsonReader: BSONReader[M], bsonWriter: BSONWriter[M], idMapper: ValueTypeMapper[ID])
+    extends DAO[M, ID] {
 
     private def findByIdQuery(id: ID) = BSONDocument("_id" -> idMapper.writeBSONValue(id))
     private val emptyQuery = BSONDocument()

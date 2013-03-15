@@ -15,6 +15,7 @@ object Build extends Build {
     .settings(sprestModuleSettings: _*)
     .settings(libraryDependencies ++=
       provided(akkaActor) ++
+      compile(logback) ++
       compile(sprayCan) ++
       compile(sprayRouting) ++
       compile(sprayJson) ++
