@@ -16,5 +16,6 @@ object DB extends ReactiveMongoPersistence {
   lazy val db = connection("reactive-example")
 
   object ToDos extends CollectionDAO[ToDo, String](db("todos")) with UUIDStringId
+  object Reminders extends CollectionDAO[Reminder, String](db("reminders")) with UUIDStringId
 
 }

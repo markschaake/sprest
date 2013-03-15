@@ -14,8 +14,8 @@
   </div>
 </div>
 <div class="container-fluid" ng-app="myModule">
-  <h2>ReactiveMongo TODO using <a href="http://spray.io">Spray</a> and <a href="https://github.com/markschaake/sprest">Sprest</a></h2>
-  <div ng-controller="myController">
+  <h2>ReactiveMongo example using <a href="http://spray.io">Spray</a> and <a href="https://github.com/markschaake/sprest">Sprest</a></h2>
+  <div ng-controller="ToDos">
     <ul class="unstyled">
       <li ng-repeat="todo in todos">
         <input type="checkbox" ng-model="todo.done" ng-change="updateTodo(todo)">
@@ -24,6 +24,19 @@
     </ul>
     <form ng-submit="addTodo()" class="form-inline">
       <input type="text" ng-model="todoText" placeholder="add todo">
+      <input class="btn btn-primary" type="submit" value="add">
+    </form>
+  </div>
+
+	<h2>Reminders</h2>
+  <div ng-controller="Reminders">
+    <ul class="unstyled">
+      <li ng-repeat="reminder in reminders">
+        <span class="reminder-title">{{reminder.title}}</span> <span class="text-info">{{reminder.remindAt | date:'MM-dd hh:mm'}} </span><a href="#" ng-click="removeReminder(reminder)">[x]</a>
+      </li>
+    </ul>
+    <form ng-submit="addReminder()" class="form-inline">
+      <input type="text" ng-model="reminderText" placeholder="add reminder">
       <input class="btn btn-primary" type="submit" value="add">
     </form>
   </div>
