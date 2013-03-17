@@ -29,7 +29,7 @@ trait ReactiveMongoPersistence {
       collection.uncheckedRemove(findByIdQuery(id))
     }
 
-    def add(m: M): Future[M] = m.id match {
+    override protected def addImpl(m: M): Future[M] = m.id match {
       case Some(id) =>
         collection.uncheckedInsert(m)
         Future.successful(m)
@@ -39,7 +39,7 @@ trait ReactiveMongoPersistence {
         Future.successful(m)
     }
 
-    def update(m: M): Future[M] = m.id match {
+    override protected def updateImpl(m: M): Future[M] = m.id match {
       case Some(id) =>
         collection.uncheckedUpdate(
           selector = findByIdQuery(id),

@@ -19,6 +19,8 @@ object Build extends Build {
       compile(sprayCan) ++
       compile(sprayRouting) ++
       compile(sprayJson) ++
+      compile(joda) ++
+      compile(jodaConvert) ++
       test(specs2) ++
       test(sprayTestKit))
 

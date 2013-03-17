@@ -4,23 +4,32 @@ import java.util.UUID
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import spray.json._
+import org.joda.time.DateTime
 
 trait Model[ID] {
   var id: Id[ID]
 }
 
 /**
- * Provides conveniences typically needed for Model companion objects
+ * Provides conveniences typically needed for Model companion objects, such as Json format helpers
  */
 trait ModelCompanion[M <: Model[ID], ID] extends DefaultJsonProtocol
 
 trait DAO[M <: Model[ID], ID] {
-  def add(m: M): Future[M]
-  def update(m: M): Future[M]
+
+  final def add(m: M): Future[M] = addImpl(prePersist(m)) map { postPersist }
+  final def update(m: M): Future[M] = updateImpl(prePersist(m)) map { postPersist }
   def remove(id: ID)
   def all: Future[Iterable[M]]
   def findById(id: ID): Future[Option[M]]
+
   protected def nextId: Option[ID] = None
+
+  protected def addImpl(m: M): Future[M]
+  protected def updateImpl(m: M): Future[M]
+
+  protected def prePersist(m: M): M = m
+  protected def postPersist(m: M): M = m
 }
 
 trait IntId { this: DAO[_, Int] =>
@@ -53,11 +62,13 @@ trait MutableListDAO[M <: Model[ID], ID] extends DAO[M, ID] {
 
   def all = Future.successful { _all }
 
-  def add(m: M) = Future.successful {
+  override protected def addImpl(m: M) = Future.successful {
     m.id = nextId
     _all += m
     m
   }
+
+  def removeAll() = _all.clear()
 
   def remove(id: ID) {
     findById(id).onSuccess {
@@ -66,9 +77,7 @@ trait MutableListDAO[M <: Model[ID], ID] extends DAO[M, ID] {
     }
   }
 
-  def removeAll() = _all.clear()
-
-  def update(m: M) = Future.successful {
+  override protected def updateImpl(m: M) = Future.successful {
     m.id match {
       case Some(id) =>
         remove(id)

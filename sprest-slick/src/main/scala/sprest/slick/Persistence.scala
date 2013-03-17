@@ -32,7 +32,7 @@ trait SlickPersistence {
     def all: Future[Iterable[M]] = futureWithSession { implicit s => Query(table).list }
     def findById(id: ID): Future[Option[M]] = futureWithSession { implicit s =>  table.byId(id).firstOption }
     def remove(id: ID) = withSession { implicit s => table.byId(id).mutate(_.delete) }
-    def update(m: M) = futureWithSession { implicit s =>
+    override protected def updateImpl(m: M) = futureWithSession { implicit s =>
       table.byId(m.id.get).mutate(_.row = m)
       m
     }
