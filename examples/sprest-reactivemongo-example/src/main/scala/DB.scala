@@ -10,12 +10,12 @@ object DB extends ReactiveMongoPersistence with BsonProtocol {
   import sprest.models.UUIDStringId
   import models._
 
-  implicit object JsonTypeMapper extends SprayJsonTypeMapper with NormalizedIdTransformer
-  implicit val todoBsonFormat = generateBSONFormat[ToDo]
-  implicit val reminderBsonFormat = generateBSONFormat[Reminder]
-
   lazy val connection = MongoConnection(List("localhost:27017"))
   lazy val db = connection("reactive-example")
+
+  // Json mapping to / from BSON - in this case we want "_id" from BSON to be 
+  // mapped to "id" in JSON in all cases
+  implicit object JsonTypeMapper extends SprayJsonTypeMapper with NormalizedIdTransformer
 
   // MongoDB collections:
   object ToDos extends CollectionDAO[ToDo, String](db("todos")) with UUIDStringId

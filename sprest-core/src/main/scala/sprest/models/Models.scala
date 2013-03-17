@@ -3,10 +3,16 @@ package sprest.models
 import java.util.UUID
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import spray.json._
 
 trait Model[ID] {
   var id: Id[ID]
 }
+
+/**
+ * Provides conveniences typically needed for Model companion objects
+ */
+trait ModelCompanion[M <: Model[ID], ID] extends DefaultJsonProtocol
 
 trait DAO[M <: Model[ID], ID] {
   def add(m: M): Future[M]

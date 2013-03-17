@@ -2,7 +2,6 @@ package sprest.examples.reactivemongo.models
 
 import spray.json._
 import sprest.models._
-import sprest.reactivemongo.ModelCompanion
 
 case class ToDo(text: String, done: Boolean, var id: Option[String] = None) extends Model[String]
 

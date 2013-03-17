@@ -3,7 +3,6 @@ package sprest.examples.reactivemongo.models
 import spray.json._
 import sprest.models._
 import org.joda.time.DateTime
-import sprest.reactivemongo.ModelCompanion
 import sprest.reactivemongo.typemappers._
 
 case class Reminder(
