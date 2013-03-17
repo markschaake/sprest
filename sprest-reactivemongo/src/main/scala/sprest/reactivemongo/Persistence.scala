@@ -1,7 +1,7 @@
 package sprest.reactivemongo
 
 import sprest.models._
-import sprest.reactivemongo.typemappers.ValueTypeMapper
+import sprest.reactivemongo.typemappers.BSONTypeMapper
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.libs.iteratee.Iteratee
@@ -12,10 +12,10 @@ trait ReactiveMongoPersistence {
   import reactivemongo.bson.handlers.{ BSONReader, BSONWriter }
   import reactivemongo.bson.handlers.DefaultBSONHandlers._
 
-  abstract class CollectionDAO[M <: Model[ID], ID](collection: Collection)(implicit bsonReader: BSONReader[M], bsonWriter: BSONWriter[M], idMapper: ValueTypeMapper[ID])
+  abstract class CollectionDAO[M <: Model[ID], ID](collection: Collection)(implicit bsonReader: BSONReader[M], bsonWriter: BSONWriter[M], idMapper: BSONTypeMapper[ID])
     extends DAO[M, ID] {
 
-    private def findByIdQuery(id: ID) = BSONDocument("_id" -> idMapper.writeBSONValue(id))
+    private def findByIdQuery(id: ID) = BSONDocument("_id" -> idMapper.toBSON(id))
     private val emptyQuery = BSONDocument()
 
     /* ===========> DAO interface <============ */
