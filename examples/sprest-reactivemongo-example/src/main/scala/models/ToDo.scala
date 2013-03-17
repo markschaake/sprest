@@ -8,8 +8,7 @@ case class ToDo(text: String, done: Boolean, var id: Option[String] = None) exte
 
 object ToDo extends ModelCompanion[ToDo, String] {
 
-  implicit val ToDoFormat = jsonFormat3(ToDo.apply _)
-  implicit val ToDoBsonFormat = generateBSONFormat(ToDoFormat)
+  implicit val toDoFormat = jsonFormat3(ToDo.apply _)
 
 }
 

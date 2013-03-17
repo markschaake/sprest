@@ -4,6 +4,7 @@ import spray.json._
 import sprest.models._
 import org.joda.time.DateTime
 import sprest.reactivemongo.ModelCompanion
+import sprest.reactivemongo.typemappers._
 
 case class Reminder(
   remindAt: DateTime,
@@ -22,8 +23,7 @@ object Reminder extends ModelCompanion[Reminder, String] {
     def write(date: DateTime) = JsNumber(date.getMillis)
   }
 
-  implicit val ReminderJsonFormat = jsonFormat4(Reminder.apply _)
-  implicit val ReminderBsonFormat = generateBSONFormat(ReminderJsonFormat)
+  implicit val reminderJsonFormat = jsonFormat4(Reminder.apply _)
 
 }
 
