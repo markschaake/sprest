@@ -12,17 +12,7 @@ case class Reminder(
   var id: Option[String] = None) extends Model[String]
 
 object Reminder extends ModelCompanion[Reminder, String] {
-
-  implicit object DateTimeFormat extends JsonFormat[DateTime] {
-    def read(json: JsValue) = json match {
-      case JsNumber(value) if value.isValidLong => new DateTime(value.toLong)
-      case JsString(strDate)                    => new DateTime(strDate)
-      case _                                    => throw new Exception("invalid format")
-    }
-    def write(date: DateTime) = JsNumber(date.getMillis)
-  }
-
+  import sprest.Formats._
   implicit val reminderJsonFormat = jsonFormat4(Reminder.apply _)
-
 }
 
