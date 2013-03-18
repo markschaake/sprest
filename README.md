@@ -1,5 +1,7 @@
 ## Sprest - REST easy with Spray ##
 
+[![Build Status](https://travis-ci.org/markschaake/sprest.png)](https://travis-ci.org/markschaake/sprest)
+
 Sprest is a collection of libaries to make building REST services simpler using [Spray](http://spray.io).
 
 Even though it is very easy to build REST services with Spray out of the box, as a learning exercise I decided to build some libraries to make working with specific technologies easier.
