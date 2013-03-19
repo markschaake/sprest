@@ -3,7 +3,7 @@ package sprest.examples.reactivemongo
 import sprest.reactivemongo.{ ReactiveMongoPersistence, BsonProtocol }
 import sprest.reactivemongo.typemappers._
 
-object DB extends ReactiveMongoPersistence with BsonProtocol {
+object DB extends ReactiveMongoPersistence {
 
   import reactivemongo.api.MongoConnection
   import scala.concurrent.ExecutionContext.Implicits.global
