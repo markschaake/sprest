@@ -5,12 +5,13 @@ import sprest.reactivemongo.typemappers._
 
 object DB extends ReactiveMongoPersistence {
 
-  import reactivemongo.api.MongoConnection
+  import reactivemongo.api._
   import scala.concurrent.ExecutionContext.Implicits.global
   import sprest.models.UUIDStringId
   import models._
 
-  lazy val connection = MongoConnection(List("localhost:27017"))
+  val driver = new MongoDriver
+  val connection = driver.connection(List("localhost"))
   lazy val db = connection("reactive-example")
 
   // Json mapping to / from BSON - in this case we want "_id" from BSON to be 
@@ -22,3 +23,4 @@ object DB extends ReactiveMongoPersistence {
   object Reminders extends CollectionDAO[Reminder, String](db("reminders")) with UUIDStringId
 
 }
+
