@@ -4,7 +4,7 @@ resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/release
 
 resolvers += "Mark Schaake" at "http://markschaake.github.com/snapshots"
 
-scalaVersion := "2.10.0"
+scalaVersion := "2.10.1"
 
 name := "sprest-reactivemongo-example"
 
