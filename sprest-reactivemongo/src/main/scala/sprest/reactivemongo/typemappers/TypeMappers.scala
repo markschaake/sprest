@@ -54,8 +54,8 @@ trait SprayJsonTypeMapper extends BSONTypeMapper[JsValue] {
     case JsFalse          => BSONBoolean(false)
     case JsTrue           => BSONBoolean(true)
     case JsNull           => BSONNull
-    case JsArray(elems)   => BSONArray(elems.map(toBSON): _*)
-    case JsObject(fields) => BSONDocument(fields.toList.map(entry => transformForBSON(entry._1) -> toBSON(entry._2)): _*)
+    case JsArray(elems)   => BSONArray(elems.map(toBSON))
+    case JsObject(fields) => BSONDocument(fields.toList.map(entry => transformForBSON(entry._1) -> toBSON(entry._2)))
   }
 
   def fromBSON(bson: BSONValue) = bson match {
@@ -66,7 +66,7 @@ trait SprayJsonTypeMapper extends BSONTypeMapper[JsValue] {
     case BSONBoolean(value)    => JsBoolean(value)
     case BSONNull              => JsNull
     case arr: BSONArray        => JsArray(arr.values.map(fromBSON).toList)
-    case bsonDoc: BSONDocument => JsObject(bsonDoc.mapped.map { (elem => transformFromBSON(elem._1) -> fromBSON(elem._2)) })
+    case bsonDoc: BSONDocument => JsObject(bsonDoc.elements.toList.map { (elem => transformFromBSON(elem._1) -> fromBSON(elem._2)) })
   }
 }
 

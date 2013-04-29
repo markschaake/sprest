@@ -79,14 +79,14 @@ class TypeMappersSpec extends Specification {
         "nested" -> JsObject(
           "foo" -> JsString("bar")))
       val bson = DefaultJsonTypeMapper.toBSON(json)
-      val bsonMapped = bson.asInstanceOf[BSONDocument].mapped
+      val bsonMapped = bson.asInstanceOf[BSONDocument].elements.toMap
       bsonMapped must have size 4
       bsonMapped("str") must_== BSONString("one")
       bsonMapped("dbl") must_== BSONDouble(123.4)
       bsonMapped("null") must_== BSONNull
-      val nested = bsonMapped("nested").asInstanceOf[BSONDocument]
-      nested.mapped must have size 1
-      nested.mapped("foo") must_== BSONString("bar")
+      val nested = bsonMapped("nested").asInstanceOf[BSONDocument].elements.toMap
+      nested must have size 1
+      nested("foo") must_== BSONString("bar")
       DefaultJsonTypeMapper.fromBSON(bson) must_== json
 
     }
@@ -99,14 +99,14 @@ class TypeMappersSpec extends Specification {
         "nested" -> JsObject(
           "foo" -> JsString("bar")))
       val bson = DefaultJsonTypeMapper.toBSON(json)
-      val bsonMapped = bson.asInstanceOf[BSONDocument].mapped
+      val bsonMapped = bson.asInstanceOf[BSONDocument].elements.toMap
       bsonMapped must have size 4
       bsonMapped("_id") must_== BSONString("one")
       bsonMapped("dbl") must_== BSONDouble(123.4)
       bsonMapped("null") must_== BSONNull
-      val nested = bsonMapped("nested").asInstanceOf[BSONDocument]
-      nested.mapped must have size 1
-      nested.mapped("foo") must_== BSONString("bar")
+      val nested = bsonMapped("nested").asInstanceOf[BSONDocument].elements.toMap
+      nested must have size 1
+      nested("foo") must_== BSONString("bar")
       DefaultJsonTypeMapper.fromBSON(bson) must_== json
     }
 
@@ -118,14 +118,14 @@ class TypeMappersSpec extends Specification {
         "nested" -> JsObject(
           "foo" -> JsString("bar")))
       val bson = NormalizedIdJsonTypeMapper.toBSON(json)
-      val bsonMapped = bson.asInstanceOf[BSONDocument].mapped
+      val bsonMapped = bson.asInstanceOf[BSONDocument].elements.toMap
       bsonMapped must have size 4
       bsonMapped("_id") must_== BSONString("one")
       bsonMapped("dbl") must_== BSONDouble(123.4)
       bsonMapped("null") must_== BSONNull
-      val nested = bsonMapped("nested").asInstanceOf[BSONDocument]
-      nested.mapped must have size 1
-      nested.mapped("foo") must_== BSONString("bar")
+      val nested = bsonMapped("nested").asInstanceOf[BSONDocument].elements.toMap
+      nested must have size 1
+      nested("foo") must_== BSONString("bar")
       NormalizedIdJsonTypeMapper.fromBSON(bson) must_== json
     }
   }
