@@ -1,10 +1,8 @@
-## Sprest - REST easy with Spray ##
+## Sprest - companion libraries to Spray ##
 
 [![Build Status](https://travis-ci.org/markschaake/sprest.png)](https://travis-ci.org/markschaake/sprest)
 
-Sprest is a collection of libaries to make building REST services simpler using [Spray](http://spray.io).
-
-Even though it is very easy to build REST services with Spray out of the box, as a learning exercise I decided to build some libraries to make working with specific technologies easier.
+Sprest is a collection of libaries to make building applications simpler using [Spray](http://spray.io). Spray provides a general toolkit for building your own web application stack. Sprest builds on top of the toolkit to provide additional (more implementation-specific) libraries to help with building your application's stack.
 
 ## Libraries ##
 
@@ -16,6 +14,9 @@ Provides [Slick](http://slick.typesafe.com/) DAO implementation.
 
 ### sprest-reactivemongo ###
 Provides [ReactiveMongo](http://reactivemongo.org/) DAO implementation.
+
+### sprest-security ###
+Provides generic permisssion and role-based authorization traits as well as directives for use with spray-routing.
 
 ## SBT ##
 Sprest is published to a GitHub-based repository. To use it, add the following resolver:

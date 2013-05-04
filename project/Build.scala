@@ -7,7 +7,7 @@ object Build extends Build {
   import Dependencies._
 
   lazy val root = Project("root", file("."))
-    .aggregate(core, sprestSlick, sprestReactiveMongo)
+    .aggregate(core, sprestSlick, sprestReactiveMongo, sprestAuth)
     .settings(basicSettings: _*)
     .settings(noPublishing: _*)
 
@@ -40,5 +40,10 @@ object Build extends Build {
       compile(reactiveMongo) ++
       compile(joda) ++
       compile(jodaConvert) ++
+      test(specs2))
+
+  lazy val sprestAuth = Project("sprest-security", file("sprest-security"))
+    .settings(sprestModuleSettings: _*)
+    .settings(libraryDependencies ++=
       test(specs2))
 }
