@@ -7,16 +7,18 @@ Sprest is a collection of libaries to make building applications simpler using [
 ## Libraries ##
 
 ### sprest-core ###
-Required by other sprest libraries. Defines model and DAO conventions as well as provides REST routing generators.
+Required by other sprest libraries.
+Provides:
+
+* Model and DAO conventions
+* REST routing generators
+* Security
 
 ### sprest-slick ###
 Provides [Slick](http://slick.typesafe.com/) DAO implementation.
 
 ### sprest-reactivemongo ###
 Provides [ReactiveMongo](http://reactivemongo.org/) DAO implementation.
-
-### sprest-security ###
-Provides generic permisssion and role-based authorization traits as well as directives for use with spray-routing.
 
 ## SBT ##
 Sprest is published to a GitHub-based repository. To use it, add the following resolver:
