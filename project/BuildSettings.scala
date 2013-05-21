@@ -3,7 +3,16 @@ import Keys._
 
 object BuildSettings {
 
-  val VERSION = "0.1.0-SNAPSHOT"
+  val VERSION = "0.1.0"
+
+  def versionIsSnapshot = VERSION.endsWith("SNAPSHOT")
+
+  def publishDir = {
+    if (versionIsSnapshot)
+      new File(Path.userHome.absolutePath + "/projects/markschaake.github.com/snapshots")
+    else
+      new File(Path.userHome.absolutePath + "/projects/markschaake.github.com/releases")
+  }
 
   lazy val noPublishing = seq(
     publish := (),
@@ -35,7 +44,7 @@ object BuildSettings {
     basicSettings ++
     seq(
       version := VERSION,
-      isSnapshot := true,
-      publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath + "/projects/markschaake.github.com/snapshots")))
+      isSnapshot := versionIsSnapshot,
+      publishTo := Some(Resolver.file("file", publishDir))
     )
 }
