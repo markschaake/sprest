@@ -2,6 +2,7 @@ package sprest.reactivemongo
 
 import reactivemongo.api.collections.default.BSONCollection
 import sprest.models._
+import sprest.security.Session
 import sprest.reactivemongo.typemappers._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -23,14 +24,16 @@ trait ReactiveMongoPersistence {
     private val emptyQuery = BSONDocument()
 
     /* ===========> DAO interface <============ */
-    override def all = collection.find(emptyQuery).cursor[M].toList
-    override def findById(id: ID) = collection.find(findByIdQuery(id)).cursor[M].toList.map(_.headOption)
-    override def remove(id: ID) {
-      // TODO need to be able to handle errors here?
-      collection.uncheckedRemove(findByIdQuery(id))
-    }
+    override def all(implicit session: Session) = collection.find(emptyQuery).cursor[M].toList
 
-    override protected def addImpl(m: M): Future[M] = m.id match {
+    override def findBySelector(selector: Selector) = collection.find(findByIdQuery(selector.id)).cursor[M].toList.map(_.headOption)
+
+    protected def uncheckedRemoveById(id: ID) = collection.uncheckedRemove(findByIdQuery(id))
+
+    protected def checkedRemoveById(id: ID) = collection.remove(findByIdQuery(id))
+
+    /** Inserts the model */
+    protected def doAdd(m: M): Future[M] = m.id match {
       case Some(id) =>
         collection.insert(m)
         Future.successful(m)
@@ -40,7 +43,8 @@ trait ReactiveMongoPersistence {
         Future.successful(m)
     }
 
-    override protected def updateImpl(m: M): Future[M] = m.id match {
+    /** Updates the model without checks */
+    protected def doUpdate(m: M): Future[M] = m.id match {
       case Some(id) =>
         collection.uncheckedUpdate(
           selector = findByIdQuery(id),

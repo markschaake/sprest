@@ -1,8 +1,8 @@
 package sprest.security
 
 trait Session {
-  type SessionID
+  type ID
 
-  def sessionId: SessionID
+  def sessionId: ID
   def user: User
 }

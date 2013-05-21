@@ -10,6 +10,7 @@ import sprest.models._
 import spray.json.DefaultJsonProtocol._
 import java.util.UUID
 import scala.util.{ Success, Failure }
+import sprest.security.Session
 
 /**
  * Mixin that provides helpers for generating RESTful routes.
@@ -19,6 +20,8 @@ trait RestRoutes { this: HttpService =>
 
   /** Custom PathMatcher for dealing with UUID's stored as String (and not as UUID objects) */
   val JavaUUIDString: PathMatcher[java.lang.String :: HNil] = JavaUUID.map(foo => foo.toString :: HNil)
+
+  def withSession: Directive[Session :: HNil]
 
   /**
    * Directive to generate REST routes for the given model with id of type T
@@ -30,36 +33,40 @@ trait RestRoutes { this: HttpService =>
    */
   def rest[M <: Model[T], T](name: String, dao: DAO[M, T], idMatcher: PathMatcher[T :: HNil])(implicit marshaller: RootJsonFormat[M]) = {
     path(name) {
-      get {
-        complete(dao.all)
-      } ~
-        post {
-          entity(as[M]) { m =>
-            complete(dao.add(m))
+      withSession { implicit session =>
+        get {
+          complete(dao.all)
+        } ~
+          post {
+            entity(as[M]) { m =>
+              complete(dao.add(m))
+            }
           }
-        }
+      }
     } ~
       path(name / idMatcher) { id =>
-        get { ctx =>
-          dao.findById(id) map {
-            case Some(m) => ctx.complete(m)
-            case None    => ctx.complete(StatusCodes.NotFound)
-          }
-        } ~
-          (put | post) {
-            entity(as[M]) { m =>
-              complete(dao.update(m))
+        withSession { implicit session =>
+          get { ctx =>
+            dao.findById(id) map {
+              case Some(m) => ctx.complete(m)
+              case None    => ctx.complete(StatusCodes.NotFound)
             }
           } ~
-          delete { ctx =>
-            dao.findById(id) map {
-              case Some(m) => ctx.complete {
-                dao.remove(id)
-                StatusCodes.OK
+            (put | post) {
+              entity(as[M]) { m =>
+                complete(dao.update(m))
               }
-              case None => ctx.complete(StatusCodes.NotFound)
+            } ~
+            delete { ctx =>
+              dao.findById(id) map {
+                case Some(m) => ctx.complete {
+                  dao.removeById(id)
+                  StatusCodes.OK
+                }
+                case None => ctx.complete(StatusCodes.NotFound)
+              }
             }
-          }
+        }
       }
   }
 

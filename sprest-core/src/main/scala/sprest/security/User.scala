@@ -2,12 +2,16 @@ package sprest.security
 
 trait User {
   type ID
-  type Permission
-  type Role
 
   def userId: ID
-  def hasPermission(permission: Permission): Boolean
-  def hasRole(role: Role): Boolean
+
+  def roles: Set[Role] = Set.empty
+  def additionalPermissions: Set[Permission] = Set.empty
+
+  lazy val allPermissions = roles.map(_.permissions).flatten ++ additionalPermissions
+
+  def hasPermission(permission: Permission): Boolean = allPermissions.contains(permission)
+  def hasRole(role: Role): Boolean = roles.contains(role)
 
   def hasPermissions(permissions: Permission*) = permissions forall { hasPermission }
   def hasRoles(roles: Role*) = roles forall { hasRole }

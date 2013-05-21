@@ -8,20 +8,34 @@ import spray.http.StatusCodes._
 import sprest.models._
 import spray.json._
 
+import sprest.security._
+
 class RestSpec extends Specification
-    with Specs2RouteTest
-    with HttpService
-    with RestRoutes
-    with spray.httpx.SprayJsonSupport
-    with DefaultJsonProtocol {
+  with Specs2RouteTest
+  with HttpService
+  with RestRoutes
+  with spray.httpx.SprayJsonSupport
+  with DefaultJsonProtocol {
+
+  case class MockUser(userId: String) extends User {
+    type ID = String
+  }
+
+  case class MockSession(sessionId: String, user: MockUser) extends Session {
+    type ID = String
+  }
+
+  implicit val mockSession = MockSession("abcdefg", MockUser("abcd"))
+
+  override def withSession = provide(mockSession)
 
   def actorRefFactory = system
 
   case class IntModel(var id: Option[Int], name: String) extends Model[Int]
   implicit val IntModelFormat = jsonFormat2(IntModel)
   class IntDAO extends DAO[IntModel, Int]
-      with MutableListDAO[IntModel, Int]
-      with IntId
+    with MutableListDAO[IntModel, Int]
+    with IntId
 
   "REST routes" should {
     "GET returns all" in new RoutesContext {
@@ -69,8 +83,10 @@ class RestSpec extends Specification
   }
 
   trait RoutesContext extends Scope {
+
     val intDAO = new IntDAO
     val intRoutes = restInt("ints", intDAO)
+
     intDAO.add(IntModel(None, "first"))
     intDAO.add(IntModel(None, "second"))
   }
