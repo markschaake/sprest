@@ -30,7 +30,7 @@ class RestSpec extends Specification
 
   val mockSession = MockSession("abcds", MockUser("first"))
 
-  override def withSession = provide(mockSession)
+  override def maybeSession = provide(Some(mockSession))
 
   implicit val maybeMockSession = Some(mockSession)
 

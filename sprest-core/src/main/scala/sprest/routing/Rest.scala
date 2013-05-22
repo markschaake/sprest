@@ -1,5 +1,6 @@
 package sprest.routing
 
+import scala.parallel.Future
 import spray.http.StatusCodes
 import spray.routing._
 import shapeless._
@@ -23,9 +24,7 @@ trait RestRoutes { this: HttpService =>
 
   type SessionImpl <: Session
 
-  def withSession: Directive[SessionImpl :: HNil]
-
-  def withMaybeSession: Directive[Option[SessionImpl] :: HNil] = withSession.map { s => Some(s).asInstanceOf[Option[SessionImpl]] }
+  def maybeSession: Directive[Option[SessionImpl] :: HNil]
 
   /**
    * Directive to generate REST routes for the given model with id of type T
@@ -37,7 +36,7 @@ trait RestRoutes { this: HttpService =>
    */
   def rest[M <: Model[T], T](name: String, dao: DAO[M, T, SessionImpl], idMatcher: PathMatcher[T :: HNil])(implicit marshaller: RootJsonFormat[M]) = {
     path(name) {
-      withMaybeSession { implicit session =>
+      maybeSession { implicit session =>
         get {
           complete(dao.all)
         } ~
@@ -49,7 +48,7 @@ trait RestRoutes { this: HttpService =>
       }
     } ~
       path(name / idMatcher) { id =>
-        withMaybeSession { implicit session =>
+        maybeSession { implicit session =>
           get { ctx =>
             dao.findById(id) map {
               case Some(m) => ctx.complete(m)

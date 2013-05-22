@@ -4,15 +4,15 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import sprest.security.Session
 
-trait UniqueSelector[M <: Model[ID], ID] {
+trait UniqueSelector[M <: Model[ID], ID, SESS <: Session] {
   def id: ID
-  def session: Option[Session]
+  def session: Option[SESS]
 }
 
 trait DAO[M <: Model[ID], ID, SessionImpl <: Session] {
 
   /** An object used for selecting a unique record */
-  type Selector <: UniqueSelector[M, ID]
+  type Selector <: UniqueSelector[M, ID, SessionImpl]
 
   implicit def generateSelector(id: ID, maybeSession: Option[SessionImpl]): Selector
 
@@ -39,7 +39,7 @@ trait DAO[M <: Model[ID], ID, SessionImpl <: Session] {
 
 trait MutableListDAO[M <: Model[ID], ID, SessionImpl <: Session] extends DAO[M, ID, SessionImpl] {
 
-  case class MSelector(id: ID, session: Option[SessionImpl]) extends UniqueSelector[M, ID]
+  case class MSelector(id: ID, session: Option[SessionImpl]) extends UniqueSelector[M, ID, SessionImpl]
 
   type Selector = MSelector
 
