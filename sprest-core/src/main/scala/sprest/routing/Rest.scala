@@ -21,7 +21,11 @@ trait RestRoutes { this: HttpService =>
   /** Custom PathMatcher for dealing with UUID's stored as String (and not as UUID objects) */
   val JavaUUIDString: PathMatcher[java.lang.String :: HNil] = JavaUUID.map(foo => foo.toString :: HNil)
 
-  def withSession: Directive[Session :: HNil]
+  type SessionImpl <: Session
+
+  def withSession: Directive[SessionImpl :: HNil]
+
+  def withMaybeSession: Directive[Option[SessionImpl] :: HNil] = withSession.map { s => Some(s).asInstanceOf[Option[SessionImpl]] }
 
   /**
    * Directive to generate REST routes for the given model with id of type T
@@ -31,9 +35,9 @@ trait RestRoutes { this: HttpService =>
    * @param dao for model M
    * @param idMatcher PathMatcher that extracts type T from route
    */
-  def rest[M <: Model[T], T](name: String, dao: DAO[M, T], idMatcher: PathMatcher[T :: HNil])(implicit marshaller: RootJsonFormat[M]) = {
+  def rest[M <: Model[T], T](name: String, dao: DAO[M, T, SessionImpl], idMatcher: PathMatcher[T :: HNil])(implicit marshaller: RootJsonFormat[M]) = {
     path(name) {
-      withSession { implicit session =>
+      withMaybeSession { implicit session =>
         get {
           complete(dao.all)
         } ~
@@ -45,7 +49,7 @@ trait RestRoutes { this: HttpService =>
       }
     } ~
       path(name / idMatcher) { id =>
-        withSession { implicit session =>
+        withMaybeSession { implicit session =>
           get { ctx =>
             dao.findById(id) map {
               case Some(m) => ctx.complete(m)
@@ -73,28 +77,28 @@ trait RestRoutes { this: HttpService =>
   /**
    * Generates REST routes with Long id
    */
-  def restLong[M <: Model[Long]](name: String, dao: DAO[M, Long])(implicit marshaller: RootJsonFormat[M]) =
+  def restLong[M <: Model[Long]](name: String, dao: DAO[M, Long, SessionImpl])(implicit marshaller: RootJsonFormat[M]) =
     rest[M, Long](name, dao, LongNumber)
 
   /**
    * Generates REST routes with Int id
    */
-  def restInt[M <: Model[Int]](name: String, dao: DAO[M, Int])(implicit marshaller: RootJsonFormat[M]) =
+  def restInt[M <: Model[Int]](name: String, dao: DAO[M, Int, SessionImpl])(implicit marshaller: RootJsonFormat[M]) =
     rest[M, Int](name, dao, IntNumber)
 
   /**
    * Generates REST routes with java.util.UUID id
    */
-  def restUUID[M <: Model[UUID]](name: String, dao: DAO[M, UUID])(implicit marshaller: RootJsonFormat[M]) =
+  def restUUID[M <: Model[UUID]](name: String, dao: DAO[M, UUID, SessionImpl])(implicit marshaller: RootJsonFormat[M]) =
     rest[M, UUID](name, dao, JavaUUID)
 
   /**
    * Generates REST routes with String UUID
    */
-  def restUUIDString[M <: Model[String]](name: String, dao: DAO[M, String])(implicit marshaller: RootJsonFormat[M]) =
+  def restUUIDString[M <: Model[String]](name: String, dao: DAO[M, String, SessionImpl])(implicit marshaller: RootJsonFormat[M]) =
     rest[M, String](name, dao, JavaUUIDString)
 
-  def restString[M <: Model[String]](name: String, dao: DAO[M, String])(implicit marshaller: RootJsonFormat[M]) =
+  def restString[M <: Model[String]](name: String, dao: DAO[M, String, SessionImpl])(implicit marshaller: RootJsonFormat[M]) =
     rest[M, String](name, dao, PathElement)
 
 }

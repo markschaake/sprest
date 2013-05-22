@@ -13,7 +13,7 @@ trait Model[ID] {
  */
 trait ModelCompanion[M <: Model[ID], ID] extends DefaultJsonProtocol
 
-trait IntId { this: DAO[_, Int] =>
+trait IntId { this: DAO[_, Int, _] =>
   protected var lastId = 0
   override protected def nextId: Option[Int] = {
     lastId += 1
@@ -21,7 +21,7 @@ trait IntId { this: DAO[_, Int] =>
   }
 }
 
-trait LongId { this: DAO[_, Long] =>
+trait LongId { this: DAO[_, Long, _] =>
   protected var lastId = 0
   override protected def nextId: Option[Long] = {
     lastId += 1
@@ -29,11 +29,11 @@ trait LongId { this: DAO[_, Long] =>
   }
 }
 
-trait UUIDStringId { this: DAO[_, String] =>
+trait UUIDStringId { this: DAO[_, String, _] =>
   override protected def nextId: Option[String] = Some(UUID.randomUUID.toString)
 }
 
-trait UUIDId { this: DAO[_, UUID] =>
+trait UUIDId { this: DAO[_, UUID, _] =>
   override protected def nextId: Option[UUID] = Some(UUID.randomUUID)
 }
 

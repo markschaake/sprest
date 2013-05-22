@@ -15,8 +15,8 @@ trait ReactiveMongoPersistence {
   import reactivemongo.bson.DefaultBSONHandlers._
   import spray.json._
 
-  abstract class CollectionDAO[M <: Model[ID], ID](collection: BSONCollection)(implicit jsonFormat: RootJsonFormat[M], jsonMapper: SprayJsonTypeMapper, idMapper: BSONTypeMapper[ID])
-    extends DAO[M, ID] with BsonProtocol {
+  abstract class CollectionDAO[M <: Model[ID], ID, SessionImpl <: Session](collection: BSONCollection)(implicit jsonFormat: RootJsonFormat[M], jsonMapper: SprayJsonTypeMapper, idMapper: BSONTypeMapper[ID])
+    extends DAO[M, ID, SessionImpl] with BsonProtocol {
 
     implicit val bsonFormat = generateBSONFormat[M]
 
@@ -24,7 +24,7 @@ trait ReactiveMongoPersistence {
     private val emptyQuery = BSONDocument()
 
     /* ===========> DAO interface <============ */
-    override def all(implicit session: Session) = collection.find(emptyQuery).cursor[M].toList
+    override def all(implicit maybeSession: Option[SessionImpl]) = collection.find(emptyQuery).cursor[M].toList
 
     override def findBySelector(selector: Selector) = collection.find(findByIdQuery(selector.id)).cursor[M].toList.map(_.headOption)
 

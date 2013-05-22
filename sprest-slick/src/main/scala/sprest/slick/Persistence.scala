@@ -28,16 +28,16 @@ trait SlickPersistence {
     def byId = createFinderBy(_.id)
   }
 
-  trait TableDAO[M <: Model[ID], ID] extends DAO[M, ID] {
+  trait TableDAO[M <: Model[ID], ID, SessionImpl <: SprestSession] extends DAO[M, ID, SessionImpl] {
     def table: ModelTable[M, ID]
 
-    override def all(implicit session: SprestSession): Future[Iterable[M]] = futureWithSession { implicit s => Query(table).list }
+    override def all(implicit maybeSession: Option[SessionImpl]): Future[Iterable[M]] = futureWithSession { implicit s => Query(table).list }
 
     override def findBySelector(selector: Selector): Future[Option[M]] = futureWithSession { implicit s => table.byId(selector.id).firstOption }
 
     override def remove(selector: Selector) = withSession { implicit s => table.byId(selector.id).mutate(_.delete) }
 
-    override protected def updateImpl(m: M)(implicit session: SprestSession) = futureWithSession { implicit s =>
+    override protected def updateImpl(m: M)(implicit maybeSession: Option[SessionImpl]) = futureWithSession { implicit s =>
       table.byId(m.id.get).mutate(_.row = m)
       m
     }

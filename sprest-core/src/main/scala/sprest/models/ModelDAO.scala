@@ -6,50 +6,50 @@ import sprest.security.Session
 
 trait UniqueSelector[M <: Model[ID], ID] {
   def id: ID
-  def session: Session
+  def session: Option[Session]
 }
 
-trait DAO[M <: Model[ID], ID] {
+trait DAO[M <: Model[ID], ID, SessionImpl <: Session] {
 
   /** An object used for selecting a unique record */
   type Selector <: UniqueSelector[M, ID]
 
-  implicit def generateSelector(session: Session, id: ID): Selector
+  implicit def generateSelector(id: ID, maybeSession: Option[SessionImpl]): Selector
 
-  final def add(m: M)(implicit session: Session): Future[M] = addImpl(prePersist(m)) map { postPersist }
-  final def update(m: M)(implicit session: Session): Future[M] = updateImpl(prePersist(m)) map { postPersist }
+  final def add(m: M)(implicit maybeSession: Option[SessionImpl]): Future[M] = addImpl(prePersist(m)) map { postPersist }
+  final def update(m: M)(implicit maybeSession: Option[SessionImpl]): Future[M] = updateImpl(prePersist(m)) map { postPersist }
 
   def remove(selector: Selector)
-  def removeById(id: ID)(implicit session: Session) = remove(generateSelector(session, id))
+  def removeById(id: ID)(implicit maybeSession: Option[SessionImpl]) = remove(generateSelector(id, maybeSession))
 
-  def all(implicit session: Session): Future[Iterable[M]]
+  def all(implicit maybeSession: Option[SessionImpl]): Future[Iterable[M]]
 
   def findBySelector(selector: Selector): Future[Option[M]]
 
-  def findById(id: ID)(implicit session: Session) = findBySelector(generateSelector(session, id))
+  def findById(id: ID)(implicit maybeSession: Option[SessionImpl]) = findBySelector(generateSelector(id, maybeSession))
 
   protected def nextId: Option[ID] = None
 
-  protected def addImpl(m: M)(implicit session: Session): Future[M]
-  protected def updateImpl(m: M)(implicit session: Session): Future[M]
+  protected def addImpl(m: M)(implicit maybeSession: Option[SessionImpl]): Future[M]
+  protected def updateImpl(m: M)(implicit maybeSession: Option[SessionImpl]): Future[M]
 
-  protected def prePersist(m: M)(implicit session: Session): M = m
-  protected def postPersist(m: M)(implicit session: Session): M = m
+  protected def prePersist(m: M)(implicit maybeSession: Option[SessionImpl]): M = m
+  protected def postPersist(m: M)(implicit maybeSession: Option[SessionImpl]): M = m
 }
 
-trait MutableListDAO[M <: Model[ID], ID] extends DAO[M, ID] {
+trait MutableListDAO[M <: Model[ID], ID, SessionImpl <: Session] extends DAO[M, ID, SessionImpl] {
 
-  case class MSelector(session: Session, id: ID) extends UniqueSelector[M, ID]
+  case class MSelector(id: ID, session: Option[SessionImpl]) extends UniqueSelector[M, ID]
 
   type Selector = MSelector
 
-  override def generateSelector(session: Session, id: ID) = MSelector(session, id)
+  override def generateSelector(id: ID, maybeSession: Option[SessionImpl]) = MSelector(id, maybeSession)
 
-  private val _all = scala.collection.mutable.ListBuffer[M]()
+  protected val _all = scala.collection.mutable.ListBuffer[M]()
 
-  override def all(implicit session: Session) = Future.successful { _all }
+  override def all(implicit maybeSession: Option[SessionImpl]) = Future.successful { _all.toIterable }
 
-  override protected def addImpl(m: M)(implicit session: Session) = Future.successful {
+  override protected def addImpl(m: M)(implicit maybeSession: Option[SessionImpl]) = Future.successful {
     m.id = nextId
     _all += m
     m
@@ -64,7 +64,7 @@ trait MutableListDAO[M <: Model[ID], ID] extends DAO[M, ID] {
     }
   }
 
-  override protected def updateImpl(m: M)(implicit session: Session) = Future.successful {
+  override protected def updateImpl(m: M)(implicit maybeSession: Option[SessionImpl]) = Future.successful {
     m.id match {
       case Some(id) =>
         removeById(id)
