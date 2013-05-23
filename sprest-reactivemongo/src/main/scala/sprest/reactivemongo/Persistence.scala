@@ -28,6 +28,8 @@ trait ReactiveMongoPersistence {
 
     override def findBySelector(selector: Selector) = collection.find(findByIdQuery(selector.id)).cursor[M].toList.map(_.headOption)
 
+    def find(bsonDoc: BSONDocument) = collection.find(bsonDoc).cursor[M].toList
+
     protected def uncheckedRemoveById(id: ID) = collection.uncheckedRemove(findByIdQuery(id))
 
     protected def checkedRemoveById(id: ID) = collection.remove(findByIdQuery(id))
