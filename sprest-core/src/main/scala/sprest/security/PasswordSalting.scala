@@ -3,35 +3,20 @@ package sprest.security
 import java.security.{ SecureRandom, MessageDigest }
 import spray.json.DefaultJsonProtocol
 
-case class EncryptedPassword(salt: Array[Byte], encryptedPass: String) {
+case class EncryptedPassword(salt: String, encryptedPass: String) {
+  def saltBytes = Hex.toBytes(salt)
+  def passwordBytes = Hex.toBytes(encryptedPass)
+}
 
-  def hexSalt = EncryptedPassword.toHex(salt)
-
-  def hexPassword = EncryptedPassword.toHex(encryptedPass.getBytes)
+object Hex {
+  import javax.xml.bind.DatatypeConverter
+  def toHex(bytes: Array[Byte]) = DatatypeConverter.printHexBinary(bytes)
+  def toBytes(hex: String) = DatatypeConverter.parseHexBinary(hex)
 }
 
 object EncryptedPassword extends DefaultJsonProtocol {
   import spray.json._
-
-  import javax.xml.bind.DatatypeConverter
-
-  protected def toHex(bytes: Array[Byte]) = DatatypeConverter.printHexBinary(bytes)
-  protected def fromHex(hex: String) = DatatypeConverter.parseHexBinary(hex)
-
-  implicit object EncryptedPasswordFormat extends RootJsonFormat[EncryptedPassword] {
-    override def write(ep: EncryptedPassword): JsValue =
-      JsObject(
-        "salt" -> ep.hexSalt.toJson,
-        "password" -> ep.hexPassword.toJson)
-    override def read(jsValue: JsValue): EncryptedPassword = {
-      jsValue.asJsObject.getFields("salt", "password") match {
-        case Seq(JsString(salt), JsString(password)) =>
-          new EncryptedPassword(fromHex(salt), new String(fromHex(password)))
-        case _ => throw new DeserializationException("salt and password expected")
-      }
-
-    }
-  }
+  implicit val encryptedPasswordFormat = jsonFormat2(EncryptedPassword.apply)
 }
 
 sealed abstract class HashingAlgorithm(val name: String) {
@@ -83,7 +68,7 @@ trait PasswordSaltingComponent {
         digest.reset()
         hashed = digest.digest(hashed)
       }
-      EncryptedPassword(salt = salt, encryptedPass = new String(hashed))
+      EncryptedPassword(salt = Hex.toHex(salt), encryptedPass = Hex.toHex(hashed))
     }
   }
 

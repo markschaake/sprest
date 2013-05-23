@@ -29,7 +29,7 @@ class PasswordSaltingComponentSpec extends Specification {
           }
         }
         val encryptedPass = passwordSalting.passwordSalting.encrypt(password)
-        encryptedPass.encryptedPass must_== passwordSalting.passwordSalting.encryptWithSalt(password, encryptedPass.salt).encryptedPass
+        encryptedPass.encryptedPass must_== passwordSalting.passwordSalting.encryptWithSalt(password, encryptedPass.saltBytes).encryptedPass
       }
     }
   }
