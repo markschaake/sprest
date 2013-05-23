@@ -1,8 +1,38 @@
 package sprest.security
 
 import java.security.{ SecureRandom, MessageDigest }
+import spray.json.DefaultJsonProtocol
 
-case class EncryptedPassword(salt: Array[Byte], encryptedPass: String)
+case class EncryptedPassword(salt: Array[Byte], encryptedPass: String) {
+
+  def hexSalt = EncryptedPassword.toHex(salt)
+
+  def hexPassword = EncryptedPassword.toHex(encryptedPass.getBytes)
+}
+
+object EncryptedPassword extends DefaultJsonProtocol {
+  import spray.json._
+
+  import javax.xml.bind.DatatypeConverter
+
+  protected def toHex(bytes: Array[Byte]) = DatatypeConverter.printHexBinary(bytes)
+  protected def fromHex(hex: String) = DatatypeConverter.parseHexBinary(hex)
+
+  implicit object EncryptedPasswordFormat extends RootJsonFormat[EncryptedPassword] {
+    override def write(ep: EncryptedPassword): JsValue =
+      JsObject(
+        "salt" -> ep.hexSalt.toJson,
+        "password" -> ep.hexPassword.toJson)
+    override def read(jsValue: JsValue): EncryptedPassword = {
+      jsValue.asJsObject.getFields("salt", "password") match {
+        case Seq(JsString(salt), JsString(password)) =>
+          new EncryptedPassword(fromHex(salt), new String(fromHex(password)))
+        case _ => throw new DeserializationException("salt and password expected")
+      }
+
+    }
+  }
+}
 
 sealed abstract class HashingAlgorithm(val name: String) {
   HashingAlgorithm._all += this
