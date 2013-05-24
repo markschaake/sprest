@@ -50,7 +50,8 @@ trait MutableListDAO[M <: Model[ID], ID, SessionImpl <: Session] extends DAO[M, 
   override def all(implicit maybeSession: Option[SessionImpl]) = Future.successful { _all.toIterable }
 
   override protected def addImpl(m: M)(implicit maybeSession: Option[SessionImpl]) = Future.successful {
-    m.id = nextId
+    if (m.id.isEmpty)
+      m.id = nextId
     _all += m
     m
   }
