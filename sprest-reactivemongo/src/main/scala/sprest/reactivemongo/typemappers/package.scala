@@ -3,11 +3,12 @@ package sprest.reactivemongo
 package object typemappers {
 
   import reactivemongo.bson._
-  import spray.json._
+  import spray.json.JsObject
 
   /** JsObject -> BSONDocument */
-  implicit object JsObjectBSONDocumentWriter extends BSONDocumentWriter[JsObject] with SprayJsonTypeMapper {
-    override def write(jsObj: JsObject): BSONDocument = toBSON(jsObj).asInstanceOf[BSONDocument]
-  }
+  implicit def jsObjectBSONDocumentWriter(implicit typeMapper: SprayJsonTypeMapper):BSONDocumentWriter[JsObject] =
+    new BSONDocumentWriter[JsObject] {
+      override def write(jsObj: JsObject): BSONDocument = BSONDocument(jsObj.fields.toList.map(entry => typeMapper.transformForBSON(entry._1) -> typeMapper.toBSON(entry._2)))
+    }
 
 }
