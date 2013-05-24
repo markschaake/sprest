@@ -3,7 +3,6 @@ package sprest.reactivemongo.typemappers
 import org.specs2.mutable._
 import spray.json._
 import reactivemongo.bson._
-import BSONTypeMapper._
 
 class TypeMappersSpec extends Specification {
 

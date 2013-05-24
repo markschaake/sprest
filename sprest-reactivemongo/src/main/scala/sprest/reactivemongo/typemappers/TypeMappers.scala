@@ -4,7 +4,6 @@ import reactivemongo.bson._
 import spray.json._
 
 trait BSONTypeMapper[T] extends ElementNameTransformer {
-  type BSONElem = (String, BSONValue)
   def toBSON(t: T): BSONValue
   def fromBSON(v: BSONValue): T
 }
