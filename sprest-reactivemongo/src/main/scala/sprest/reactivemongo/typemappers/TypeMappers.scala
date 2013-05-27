@@ -31,16 +31,23 @@ trait ElementNameTransformer {
   def transformFromBSON(name: String): String = name
 }
 
+trait IdElementNameTransformer extends ElementNameTransformer {
+
+  def idFieldName: String
+
+  abstract override def transformForBSON(name: String): String =
+    if (super.transformForBSON(name) == idFieldName) "_id"
+    else super.transformForBSON(name)
+  abstract override def transformFromBSON(name: String): String =
+    if (super.transformFromBSON(name) == "_id") idFieldName
+    else super.transformFromBSON(name)
+}
+
 /**
  * Stackable trait that transforms element names of "_id" to "id"
  */
-trait NormalizedIdTransformer extends ElementNameTransformer {
-  abstract override def transformForBSON(name: String): String =
-    if (super.transformForBSON(name) == "id") "_id"
-    else super.transformForBSON(name)
-  abstract override def transformFromBSON(name: String): String =
-    if (super.transformFromBSON(name) == "_id") "id"
-    else super.transformFromBSON(name)
+trait NormalizedIdTransformer extends IdElementNameTransformer {
+  override def idFieldName = "id"
 }
 
 trait SprayJsonTypeMapper extends BSONTypeMapper[JsValue] {
