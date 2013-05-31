@@ -12,7 +12,7 @@ Provides:
 
 * Model and DAO conventions
 * REST routing generators
-* Security
+* Security including password salting and session and user traits
 
 ### sprest-slick ###
 Provides [Slick](http://slick.typesafe.com/) DAO implementation.
@@ -27,8 +27,8 @@ Sprest is published to a GitHub-based repository. To use it, add the following r
 
 Then you can include sprest libraries:
 
-    libraryDependencies += "sprest" %% "sprest-core % "0.1.0-SNAPSHOT"
-	libraryDependencies += "sprest" %% "sprest-slick" % "0.1.0-SNAPSHOT"
-	libraryDependencies += "sprest" %% "sprest-reactivemongo % "0.1.0-SNAPSHOT"
+    libraryDependencies += "sprest" %% "sprest-core % "0.2.0-SNAPSHOT"
+	libraryDependencies += "sprest" %% "sprest-slick" % "0.2.0-SNAPSHOT"
+	libraryDependencies += "sprest" %% "sprest-reactivemongo % "0.2.0-SNAPSHOT"
 
 Note: it is unnecessary to explicitly declare the "sprest-core" dependency if you declare a dependency on a library that depends upon the core (such as sprest-slick or sprest-reactivemongo).
