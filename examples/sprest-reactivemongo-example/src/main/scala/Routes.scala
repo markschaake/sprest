@@ -9,6 +9,10 @@ trait Routes extends RestRoutes { this: SimpleRoutingApp with spray.httpx.TwirlS
   import spray.httpx.encoding.Gzip
   import spray.json._
 
+  type SessionImpl = security.Session
+
+  def maybeSession = provide(Some(security.Session()))
+
   val js = pathPrefix("js" / Rest) { fileName =>
     get {
       encodeResponse(Gzip) { getFromResource(s"js/$fileName") }

@@ -15,7 +15,7 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.0.1",
   "joda-time" % "joda-time" % "2.1",
   "org.joda" % "joda-convert" % "1.3",
-  "sprest" %% "sprest-reactivemongo" % "0.1.0-SNAPSHOT",
+  "sprest" %% "sprest-reactivemongo" % "0.2.0-SNAPSHOT",
   "org.specs2" %% "specs2" % "1.13" % "test"
 )
 
