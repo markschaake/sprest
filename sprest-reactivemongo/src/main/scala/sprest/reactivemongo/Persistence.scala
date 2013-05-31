@@ -1,6 +1,8 @@
 package sprest.reactivemongo
 
 import reactivemongo.api.collections.default.BSONCollection
+import sprest.Implicits._
+import sprest.Logging
 import sprest.models._
 import sprest.security.Session
 import sprest.reactivemongo.typemappers._
@@ -16,7 +18,9 @@ trait ReactiveMongoPersistence {
   import spray.json._
 
   abstract class CollectionDAO[M <: Model[ID], ID, SessionImpl <: Session](collection: BSONCollection)(implicit jsonFormat: RootJsonFormat[M], jsonMapper: SprayJsonTypeMapper, idMapper: BSONTypeMapper[ID])
-    extends DAO[M, ID, SessionImpl] with BsonProtocol {
+    extends DAO[M, ID, SessionImpl] with BsonProtocol with Logging {
+
+    override val loggerName = "Sprest-ReactiveMongo"
 
     implicit val bsonFormat = generateBSONFormat[M]
 
@@ -26,7 +30,10 @@ trait ReactiveMongoPersistence {
     /* ===========> DAO interface <============ */
     override def all(implicit maybeSession: Option[SessionImpl]) = collection.find(emptyQuery).cursor[M].toList
 
-    override def findBySelector(selector: Selector) = collection.find(findByIdQuery(selector.id)).cursor[M].toList.map(_.headOption)
+    override def findBySelector(selector: Selector) =
+      Logger.debugTimedAsync(s"Fetching by selector $selector", logResult = true) {
+        collection.find(findByIdQuery(selector.id)).cursor[M].toList.map(_.headOption)
+      }
 
     def find[T](obj: T)(implicit writer: BSONDocumentWriter[T]) = collection.find(obj).cursor[M].toList
 

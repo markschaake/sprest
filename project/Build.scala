@@ -7,9 +7,13 @@ object Build extends Build {
   import Dependencies._
 
   lazy val root = Project("root", file("."))
-    .aggregate(core, sprestSlick, sprestReactiveMongo)
+    .aggregate(macros, core, sprestSlick, sprestReactiveMongo)
     .settings(basicSettings: _*)
     .settings(noPublishing: _*)
+
+  lazy val macros = Project("sprest-macros", file("sprest-macros"))
+    .dependsOn(core)
+    .settings(sprestModuleSettings: _*)
 
   lazy val core = Project("sprest-core", file("sprest-core"))
     .settings(sprestModuleSettings: _*)
@@ -23,6 +27,7 @@ object Build extends Build {
       compile(jodaConvert) ++
       test(specs2) ++
       test(sprayTestKit))
+
 
   lazy val sprestSlick = Project("sprest-slick", file("sprest-slick"))
     .dependsOn(core)

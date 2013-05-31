@@ -5,14 +5,18 @@ import spray.json._
 
 class EnumSpec extends Specification {
 
-  sealed abstract class FakeEnum(name: String) extends Enum[FakeEnum](name, FakeEnum)
+  sealed abstract class FakeEnum(name: String) extends Enum[FakeEnum](name)
   object FakeEnum extends EnumCompanion[FakeEnum] {
     case object Value1 extends FakeEnum("value1")
     case object Value2 extends FakeEnum("value2")
     case object Value3 extends FakeEnum("value3")
+    register(Value1, Value2, Value3)
   }
 
   "Enum" should {
+    "have all" in {
+      FakeEnum.all must have size 3
+    }
     "serialize to / from JSON" in {
       val results =
         FakeEnum.all.map { industry =>
@@ -23,7 +27,7 @@ class EnumSpec extends Specification {
     }
 
     "fetch by name" in {
-      FakeEnum.withName("value2") must_== FakeEnum.Value2
+      FakeEnum.withName("value2").name must_== "value2"
     }
   }
 }

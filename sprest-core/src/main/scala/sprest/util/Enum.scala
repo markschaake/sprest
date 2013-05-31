@@ -5,13 +5,13 @@ package enum {
   import scala.collection.mutable.{ Map => MMap }
   import spray.json._
 
-  abstract class Enum[T <: Enum[T]](val name: String, companion: EnumCompanion[T]) {
-    companion._all(name) = this.asInstanceOf[T]
-  }
+  abstract class Enum[T <: Enum[T]](val name: String)
 
   abstract class EnumCompanion[T <: Enum[T]] {
 
     private[enum] val _all = MMap[String, T]()
+
+    protected def register(es: T*) = es foreach { e => _all(e.name) = e }
 
     implicit object jsonFormat extends RootJsonFormat[T] {
       override def write(t: T) = JsString(t.name)
@@ -23,8 +23,7 @@ package enum {
 
     def withName(name: String): T = _all(name)
 
-    def all = _all.values
-
+    def all = _all.values.toList
   }
 
 }
