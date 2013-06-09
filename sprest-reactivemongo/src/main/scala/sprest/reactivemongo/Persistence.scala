@@ -28,7 +28,7 @@ trait ReactiveMongoPersistence {
     private val emptyQuery = BSONDocument()
 
     /* ===========> DAO interface <============ */
-    override def all(implicit maybeSession: Option[SessionImpl]) = collection.find(emptyQuery).cursor[M].toList
+    override protected def allImpl(implicit maybeSession: Option[SessionImpl]) = collection.find(emptyQuery).cursor[M].toList
 
     override def findBySelector(selector: Selector) =
       Logger.debugTimedAsync(s"Fetching by selector $selector", logResult = true) {

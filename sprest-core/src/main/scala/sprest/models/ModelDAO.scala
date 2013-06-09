@@ -22,11 +22,19 @@ trait DAO[M <: Model[ID], ID, SessionImpl <: Session] {
   def remove(selector: Selector)
   def removeById(id: ID)(implicit maybeSession: Option[SessionImpl]) = remove(generateSelector(id, maybeSession))
 
-  def all(implicit maybeSession: Option[SessionImpl]): Future[Iterable[M]]
+  protected def allImpl(implicit maybeSession: Option[SessionImpl]): Future[Iterable[M]]
 
-  def findBySelector(selector: Selector): Future[Option[M]]
+  final def all(implicit maybeSession: Option[SessionImpl]): Future[Iterable[M]] = allImpl flatMap { ms =>
+    Future.traverse(ms)(postFetch)
+  }
 
-  def findById(id: ID)(implicit maybeSession: Option[SessionImpl]) = findBySelector(generateSelector(id, maybeSession))
+  protected def findBySelector(selector: Selector): Future[Option[M]]
+
+  def findById(id: ID)(implicit maybeSession: Option[SessionImpl]): Future[Option[M]] =
+    findBySelector(generateSelector(id, maybeSession)) flatMap {
+      case Some(m) => postFetch(m) map { m => Option(m) }
+      case None    => Future.successful(None)
+    }
 
   protected def nextId: Option[ID] = None
 
@@ -35,6 +43,8 @@ trait DAO[M <: Model[ID], ID, SessionImpl <: Session] {
 
   protected def prePersist(m: M)(implicit maybeSession: Option[SessionImpl]): M = m
   protected def postPersist(m: M)(implicit maybeSession: Option[SessionImpl]): M = m
+
+  protected def postFetch(m: M)(implicit maybeSession: Option[SessionImpl]): Future[M] = Future.successful(m)
 }
 
 trait MutableListDAO[M <: Model[ID], ID, SessionImpl <: Session] extends DAO[M, ID, SessionImpl] {
@@ -47,7 +57,7 @@ trait MutableListDAO[M <: Model[ID], ID, SessionImpl <: Session] extends DAO[M, 
 
   protected val _all = scala.collection.mutable.ListBuffer[M]()
 
-  override def all(implicit maybeSession: Option[SessionImpl]) = Future.successful { _all.toIterable }
+  override protected def allImpl(implicit maybeSession: Option[SessionImpl]) = Future.successful { _all.toIterable }
 
   override protected def addImpl(m: M)(implicit maybeSession: Option[SessionImpl]) = Future.successful {
     if (m.id.isEmpty)

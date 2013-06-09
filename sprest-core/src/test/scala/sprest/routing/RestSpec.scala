@@ -54,7 +54,7 @@ class RestSpec extends Specification
       case None       => throw new Exception("Session required to add!")
     }
 
-    override def all(implicit maybeSession: Option[SessionImpl]): Future[Iterable[IntModel]] = maybeSession match {
+    override protected def allImpl(implicit maybeSession: Option[SessionImpl]): Future[Iterable[IntModel]] = maybeSession match {
       case Some(sess) => Future.successful {
         _all.filter(_.userId == sess.user.userId).toIterable
       }

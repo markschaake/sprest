@@ -31,7 +31,7 @@ trait SlickPersistence {
   trait TableDAO[M <: Model[ID], ID, SessionImpl <: SprestSession] extends DAO[M, ID, SessionImpl] {
     def table: ModelTable[M, ID]
 
-    override def all(implicit maybeSession: Option[SessionImpl]): Future[Iterable[M]] = futureWithSession { implicit s => Query(table).list }
+    override protected def allImpl(implicit maybeSession: Option[SessionImpl]): Future[Iterable[M]] = futureWithSession { implicit s => Query(table).list }
 
     override def findBySelector(selector: Selector): Future[Option[M]] = futureWithSession { implicit s => table.byId(selector.id).firstOption }
 
