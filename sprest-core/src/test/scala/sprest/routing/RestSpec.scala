@@ -2,6 +2,7 @@ package sprest.routing
 
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
+import scala.transient
 import spray.testkit.Specs2RouteTest
 import spray.routing.HttpService
 import spray.http.StatusCodes._
@@ -38,7 +39,7 @@ class RestSpec extends Specification
 
   case class IntModel(var id: Option[Int], name: String, userId: String) extends Model[Int]
 
-  implicit val IntModelFormat = jsonFormat3(IntModel)
+  implicit val IntModelFormat = jsonFormat(IntModel, "id", "name", "userId")
 
   class IntDAO extends DAO[IntModel, Int, MockSession]
     with MutableListDAO[IntModel, Int, MockSession]
@@ -81,7 +82,8 @@ class RestSpec extends Specification
 
     "GET by id returns single model" in new RoutesContext {
       Get("/ints/2") ~> intRoutes ~> check {
-        entityAs[IntModel].name must_== "second"
+        val m = entityAs[IntModel]
+        m.name must_== "second"
       }
     }
 

@@ -32,7 +32,7 @@ trait DAO[M <: Model[ID], ID, SessionImpl <: Session] {
 
   def findById(id: ID)(implicit maybeSession: Option[SessionImpl]): Future[Option[M]] =
     findBySelector(generateSelector(id, maybeSession)) flatMap {
-      case Some(m) => postFetch(m) map { m => Option(m) }
+      case Some(m) => postFetch(m) map { Option(_) }
       case None    => Future.successful(None)
     }
 
