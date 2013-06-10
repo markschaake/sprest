@@ -1,7 +1,7 @@
 package sprest.models
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import sprest.security.Session
 
 trait UniqueSelector[M <: Model[ID], ID, SESS <: Session] {
@@ -16,21 +16,22 @@ trait DAO[M <: Model[ID], ID, SessionImpl <: Session] {
 
   implicit def generateSelector(id: ID, maybeSession: Option[SessionImpl]): Selector
 
-  final def add(m: M)(implicit maybeSession: Option[SessionImpl]): Future[M] = addImpl(prePersist(m)) map { postPersist }
-  final def update(m: M)(implicit maybeSession: Option[SessionImpl]): Future[M] = updateImpl(prePersist(m)) map { postPersist }
+  final def add(m: M)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext): Future[M] = addImpl(prePersist(m)) map { postPersist }
+  final def update(m: M)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext): Future[M] = updateImpl(prePersist(m)) map { postPersist }
 
-  def remove(selector: Selector)
-  def removeById(id: ID)(implicit maybeSession: Option[SessionImpl]) = remove(generateSelector(id, maybeSession))
+  def remove(selector: Selector)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext)
 
-  protected def allImpl(implicit maybeSession: Option[SessionImpl]): Future[Iterable[M]]
+  def removeById(id: ID)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext) = remove(generateSelector(id, maybeSession))
 
-  final def all(implicit maybeSession: Option[SessionImpl]): Future[Iterable[M]] = allImpl flatMap { ms =>
+  protected def allImpl(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext): Future[Iterable[M]]
+
+  final def all(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext): Future[Iterable[M]] = allImpl flatMap { ms =>
     Future.traverse(ms)(postFetch)
   }
 
-  protected def findBySelector(selector: Selector): Future[Option[M]]
+  protected def findBySelector(selector: Selector)(implicit ec: ExecutionContext): Future[Option[M]]
 
-  def findById(id: ID)(implicit maybeSession: Option[SessionImpl]): Future[Option[M]] =
+  def findById(id: ID)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext): Future[Option[M]] =
     findBySelector(generateSelector(id, maybeSession)) flatMap {
       case Some(m) => postFetch(m) map { Option(_) }
       case None    => Future.successful(None)
@@ -38,13 +39,13 @@ trait DAO[M <: Model[ID], ID, SessionImpl <: Session] {
 
   protected def nextId: Option[ID] = None
 
-  protected def addImpl(m: M)(implicit maybeSession: Option[SessionImpl]): Future[M]
-  protected def updateImpl(m: M)(implicit maybeSession: Option[SessionImpl]): Future[M]
+  protected def addImpl(m: M)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext): Future[M]
+  protected def updateImpl(m: M)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext): Future[M]
 
-  protected def prePersist(m: M)(implicit maybeSession: Option[SessionImpl]): M = m
-  protected def postPersist(m: M)(implicit maybeSession: Option[SessionImpl]): M = m
+  protected def prePersist(m: M)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext): M = m
+  protected def postPersist(m: M)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext): M = m
 
-  protected def postFetch(m: M)(implicit maybeSession: Option[SessionImpl]): Future[M] = Future.successful(m)
+  protected def postFetch(m: M)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext): Future[M] = Future.successful(m)
 }
 
 trait MutableListDAO[M <: Model[ID], ID, SessionImpl <: Session] extends DAO[M, ID, SessionImpl] {
@@ -57,9 +58,9 @@ trait MutableListDAO[M <: Model[ID], ID, SessionImpl <: Session] extends DAO[M, 
 
   protected val _all = scala.collection.mutable.ListBuffer[M]()
 
-  override protected def allImpl(implicit maybeSession: Option[SessionImpl]) = Future.successful { _all.toIterable }
+  override protected def allImpl(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext) = Future.successful { _all.toIterable }
 
-  override protected def addImpl(m: M)(implicit maybeSession: Option[SessionImpl]) = Future.successful {
+  override protected def addImpl(m: M)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext) = Future.successful {
     if (m.id.isEmpty)
       m.id = nextId
     _all += m
@@ -68,14 +69,14 @@ trait MutableListDAO[M <: Model[ID], ID, SessionImpl <: Session] extends DAO[M, 
 
   def removeAll() = _all.clear()
 
-  override def remove(selector: Selector) {
+  override def remove(selector: Selector)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext) {
     findBySelector(selector).onSuccess {
       case Some(found) => _all -= found
       case None        => // do nothing
     }
   }
 
-  override protected def updateImpl(m: M)(implicit maybeSession: Option[SessionImpl]) = Future.successful {
+  override protected def updateImpl(m: M)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext) = Future.successful {
     m.id match {
       case Some(id) =>
         removeById(id)
@@ -85,7 +86,7 @@ trait MutableListDAO[M <: Model[ID], ID, SessionImpl <: Session] extends DAO[M, 
     }
   }
 
-  override def findBySelector(selector: Selector) = Future.successful {
+  override def findBySelector(selector: Selector)(implicit ec: ExecutionContext) = Future.successful {
     _all.find(_.id.get == selector.id)
   }
 }

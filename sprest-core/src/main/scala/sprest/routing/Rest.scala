@@ -1,10 +1,12 @@
 package sprest.routing
 
+import akka.actor.ActorSystem
+import scala.concurrent.ExecutionContext
 import scala.parallel.Future
 import spray.http.StatusCodes
 import spray.routing._
 import shapeless._
-import spray.routing.directives.PathMatcher
+import spray.routing.PathMatcher
 import spray.json._
 import spray.httpx.SprayJsonSupport._
 import sprest.models._
@@ -18,6 +20,11 @@ import sprest.security.Session
  * Currently, limited to SprayJSON marshalling.
  */
 trait RestRoutes { this: HttpService =>
+
+  val system: ActorSystem
+
+  // Import the exection context:
+  import system.dispatcher
 
   /** Custom PathMatcher for dealing with UUID's stored as String (and not as UUID objects) */
   val JavaUUIDString: PathMatcher[java.lang.String :: HNil] = JavaUUID.map(foo => foo.toString :: HNil)
@@ -98,6 +105,6 @@ trait RestRoutes { this: HttpService =>
     rest[M, String](name, dao, JavaUUIDString)
 
   def restString[M <: Model[String]](name: String, dao: DAO[M, String, SessionImpl])(implicit marshaller: RootJsonFormat[M]) =
-    rest[M, String](name, dao, PathElement)
+    rest[M, String](name, dao, Segment)
 
 }

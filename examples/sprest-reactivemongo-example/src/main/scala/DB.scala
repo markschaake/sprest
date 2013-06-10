@@ -8,15 +8,15 @@ import spray.json.RootJsonFormat
 object DB extends ReactiveMongoPersistence {
 
   import reactivemongo.api._
-  import scala.concurrent.ExecutionContext.Implicits.global
   import sprest.models.UUIDStringId
   import sprest.models.UniqueSelector
   import models._
   import sprest.examples.reactivemongo.security.Session
+  import scala.concurrent.ExecutionContext
 
   val driver = new MongoDriver
   val connection = driver.connection(List("localhost"))
-  lazy val db = connection("reactive-example")
+  lazy val db = connection("reactive-example")(Main.system.dispatcher)
 
   // Json mapping to / from BSON - in this case we want "_id" from BSON to be 
   // mapped to "id" in JSON in all cases
@@ -27,9 +27,9 @@ object DB extends ReactiveMongoPersistence {
     case class Selector(id: String, session: Option[Session]) extends UniqueSelector[M, String, Session]
 
     override implicit def generateSelector(id: String, maybeSession: Option[Session]) = Selector(id, maybeSession)
-    override protected def addImpl(m: M)(implicit maybeSession: Option[Session]) = doAdd(m)
-    override protected def updateImpl(m: M)(implicit maybeSession: Option[Session]) = doUpdate(m)
-    override def remove(selector: Selector) = uncheckedRemoveById(selector.id)
+    override protected def addImpl(m: M)(implicit maybeSession: Option[Session], ec: ExecutionContext) = doAdd(m)
+    override protected def updateImpl(m: M)(implicit maybeSession: Option[Session], ec: ExecutionContext) = doUpdate(m)
+    override def remove(selector: Selector)(implicit maybeSession: Option[Session], ec: ExecutionContext) = uncheckedRemoveById(selector.id)
   }
 
   // MongoDB collections:

@@ -7,7 +7,7 @@ import sprest.models._
 import sprest.security.Session
 import sprest.reactivemongo.typemappers._
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 import play.api.libs.iteratee.Iteratee
 
 trait ReactiveMongoPersistence {
@@ -28,21 +28,21 @@ trait ReactiveMongoPersistence {
     private val emptyQuery = BSONDocument()
 
     /* ===========> DAO interface <============ */
-    override protected def allImpl(implicit maybeSession: Option[SessionImpl]) = collection.find(emptyQuery).cursor[M].toList
+    override protected def allImpl(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext) = collection.find(emptyQuery).cursor[M].toList
 
-    override def findBySelector(selector: Selector) =
+    override def findBySelector(selector: Selector)(implicit ec: ExecutionContext) =
       Logger.debugTimedAsync(s"Fetching by selector $selector", logResult = true) {
         collection.find(findByIdQuery(selector.id)).cursor[M].toList.map(_.headOption)
       }
 
-    def find[T](obj: T)(implicit writer: BSONDocumentWriter[T]) = collection.find(obj).cursor[M].toList
+    def find[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext) = collection.find(obj).cursor[M].toList
 
-    protected def uncheckedRemoveById(id: ID) = collection.uncheckedRemove(findByIdQuery(id))
+    protected def uncheckedRemoveById(id: ID)(implicit ec: ExecutionContext) = collection.uncheckedRemove(findByIdQuery(id))
 
-    protected def checkedRemoveById(id: ID) = collection.remove(findByIdQuery(id))
+    protected def checkedRemoveById(id: ID)(implicit ec: ExecutionContext) = collection.remove(findByIdQuery(id))
 
     /** Inserts the model */
-    protected def doAdd(m: M): Future[M] = m.id match {
+    protected def doAdd(m: M)(implicit ec: ExecutionContext): Future[M] = m.id match {
       case Some(id) =>
         collection.insert(m)
         Future.successful(m)
@@ -53,7 +53,7 @@ trait ReactiveMongoPersistence {
     }
 
     /** Updates the model without checks */
-    protected def doUpdate(m: M): Future[M] = m.id match {
+    protected def doUpdate(m: M)(implicit ec: ExecutionContext): Future[M] = m.id match {
       case Some(id) =>
         collection.uncheckedUpdate(
           selector = findByIdQuery(id),

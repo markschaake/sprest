@@ -2,6 +2,7 @@ package sprest.routing
 
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
+import scala.concurrent.ExecutionContext
 import scala.transient
 import spray.testkit.Specs2RouteTest
 import spray.routing.HttpService
@@ -45,7 +46,7 @@ class RestSpec extends Specification
     with MutableListDAO[IntModel, Int, MockSession]
     with IntId {
 
-    override protected def addImpl(m: IntModel)(implicit maybeSession: Option[SessionImpl]) = maybeSession match {
+    override protected def addImpl(m: IntModel)(implicit maybeSession: Option[MockSession], ec: ExecutionContext) = maybeSession match {
       case Some(sess) if sess.user.userId == m.userId => Future.successful {
         m.id = nextId
         _all += m
@@ -55,7 +56,7 @@ class RestSpec extends Specification
       case None       => throw new Exception("Session required to add!")
     }
 
-    override protected def allImpl(implicit maybeSession: Option[SessionImpl]): Future[Iterable[IntModel]] = maybeSession match {
+    override protected def allImpl(implicit maybeSession: Option[MockSession], ec: ExecutionContext): Future[Iterable[IntModel]] = maybeSession match {
       case Some(sess) => Future.successful {
         _all.filter(_.userId == sess.user.userId).toIterable
       }
@@ -117,7 +118,7 @@ class RestSpec extends Specification
     val intRoutes = restInt("ints", intDAO)
 
     intDAO.add(IntModel(None, "first", "first"))
-    intDAO.add(IntModel(None, "second", "second"))(Some(MockSession("efg", MockUser("second"))))
+    intDAO.add(IntModel(None, "second", "second"))(Some(MockSession("efg", MockUser("second"))), system.dispatcher)
     intDAO.add(IntModel(None, "anotherfirst", "first"))
   }
 }

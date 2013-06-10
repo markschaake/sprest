@@ -3,7 +3,7 @@ package sprest.slick
 import sprest.models._
 import sprest.security.{ Session => SprestSession }
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 
 trait SlickPersistence {
   import scala.slick.driver.ExtendedDriver
@@ -31,13 +31,13 @@ trait SlickPersistence {
   trait TableDAO[M <: Model[ID], ID, SessionImpl <: SprestSession] extends DAO[M, ID, SessionImpl] {
     def table: ModelTable[M, ID]
 
-    override protected def allImpl(implicit maybeSession: Option[SessionImpl]): Future[Iterable[M]] = futureWithSession { implicit s => Query(table).list }
+    override protected def allImpl(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext): Future[Iterable[M]] = futureWithSession { implicit s => Query(table).list }
 
-    override def findBySelector(selector: Selector): Future[Option[M]] = futureWithSession { implicit s => table.byId(selector.id).firstOption }
+    override def findBySelector(selector: Selector)(implicit ec: ExecutionContext): Future[Option[M]] = futureWithSession { implicit s => table.byId(selector.id).firstOption }
 
-    override def remove(selector: Selector) = withSession { implicit s => table.byId(selector.id).mutate(_.delete) }
+    override def remove(selector: Selector)(implicit maybeSessin: Option[SessionImpl], ec: ExecutionContext) = withSession { implicit s => table.byId(selector.id).mutate(_.delete) }
 
-    override protected def updateImpl(m: M)(implicit maybeSession: Option[SessionImpl]) = futureWithSession { implicit s =>
+    override protected def updateImpl(m: M)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext) = futureWithSession { implicit s =>
       table.byId(m.id.get).mutate(_.row = m)
       m
     }
