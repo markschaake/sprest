@@ -29,6 +29,34 @@ class DAOSpec extends Specification {
         value.foo must_== Some(value.id.get + " ok")
       }
     }
+
+    "perform postFetch on add" in new DAOContext {
+      val m = IntModel(
+        id = None,
+        name = "hi",
+        userId = "first")
+      val addedFuture = intDAO.add(m)(maybeMockSession, global)
+      Await.ready(addedFuture, Duration(500, MILLISECONDS))
+      val added = addedFuture.value.get.get
+      added.foo must not beNone
+    }
+
+    "perform postFetch on update" in new DAOContext {
+      val m = IntModel(
+        id = None,
+        name = "hi",
+        userId = "first")
+
+      val future =
+        for {
+          added <- intDAO.add(m)(maybeMockSession, global)
+          updated <- intDAO.update(added.copy(name = "there"))(maybeMockSession, global)
+        } yield updated
+
+      Await.ready(future, Duration(500, MILLISECONDS))
+      val updated = future.value.get.get
+      updated.foo must not beNone
+    }
   }
 
   case class MockUser(userId: String) extends User {

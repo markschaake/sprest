@@ -16,8 +16,21 @@ trait DAO[M <: Model[ID], ID, SessionImpl <: Session] {
 
   implicit def generateSelector(id: ID, maybeSession: Option[SessionImpl]): Selector
 
-  final def add(m: M)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext): Future[M] = addImpl(prePersist(m)) map { postPersist }
-  final def update(m: M)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext): Future[M] = updateImpl(prePersist(m)) map { postPersist }
+  final def add(m: M)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext): Future[M] =
+    for {
+      added <- addImpl(prePersist(m))
+      postFetched <- postFetch(added)
+    } yield {
+      postPersist(postFetched)
+    }
+
+  final def update(m: M)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext): Future[M] =
+    for {
+      updated <- updateImpl(prePersist(m))
+      postFetched <- postFetch(updated)
+    } yield {
+      postPersist(postFetched)
+    }
 
   def remove(selector: Selector)(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext)
 
