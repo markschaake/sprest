@@ -17,8 +17,8 @@ trait ReactiveMongoPersistence {
   import reactivemongo.bson.DefaultBSONHandlers._
   import spray.json._
 
-  abstract class CollectionDAO[M <: Model[ID], ID, SessionImpl <: Session](collection: BSONCollection)(implicit jsonFormat: RootJsonFormat[M], jsonMapper: SprayJsonTypeMapper, idMapper: BSONTypeMapper[ID])
-    extends DAO[M, ID, SessionImpl] with BsonProtocol with Logging {
+  abstract class CollectionDAO[M <: Model[ID], ID](collection: BSONCollection)(implicit jsonFormat: RootJsonFormat[M], jsonMapper: SprayJsonTypeMapper, idMapper: BSONTypeMapper[ID])
+    extends DAO[M, ID] with BsonProtocol with Logging {
 
     override val loggerName = "Sprest-ReactiveMongo"
 
@@ -28,7 +28,7 @@ trait ReactiveMongoPersistence {
     private val emptyQuery = BSONDocument()
 
     /* ===========> DAO interface <============ */
-    override protected def allImpl(implicit maybeSession: Option[SessionImpl], ec: ExecutionContext) = collection.find(emptyQuery).cursor[M].toList
+    override protected def allImpl(implicit ec: ExecutionContext) = collection.find(emptyQuery).cursor[M].toList
 
     override def findBySelector(selector: Selector)(implicit ec: ExecutionContext) =
       Logger.debugTimedAsync(s"Fetching by selector $selector", logResult = true) {

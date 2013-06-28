@@ -14,17 +14,17 @@ class DAOSpec extends Specification {
 
   "DAO" should {
     "perform postFetch on findById" in new DAOContext {
-      val one = intDAO.findById(1)(maybeMockSession, global)
+      val one = intDAO.findById(1)
       Await.ready(one, Duration(500, MILLISECONDS))
       println(one.value)
       one.value.get.get.get.foo must_== Some("1 ok")
     }
 
     "perform postFetch on all" in new DAOContext {
-      val all = intDAO.all(maybeMockSession, global)
+      val all = intDAO.all
       Await.ready(all, Duration(500, MILLISECONDS))
       val values = all.value.get.get
-      values must have size 2
+      values must have size 3
       values map { value =>
         value.foo must_== Some(value.id.get + " ok")
       }
@@ -35,7 +35,7 @@ class DAOSpec extends Specification {
         id = None,
         name = "hi",
         userId = "first")
-      val addedFuture = intDAO.add(m)(maybeMockSession, global)
+      val addedFuture = intDAO.add(m)
       Await.ready(addedFuture, Duration(500, MILLISECONDS))
       val added = addedFuture.value.get.get
       added.foo must not beNone
@@ -49,8 +49,8 @@ class DAOSpec extends Specification {
 
       val future =
         for {
-          added <- intDAO.add(m)(maybeMockSession, global)
-          updated <- intDAO.update(added.copy(name = "there"))(maybeMockSession, global)
+          added <- intDAO.add(m)
+          updated <- intDAO.update(added.copy(name = "there"))
         } yield updated
 
       Await.ready(future, Duration(500, MILLISECONDS))
@@ -74,39 +74,20 @@ class DAOSpec extends Specification {
     }
   }
 
-  class IntDAO extends DAO[IntModel, Int, MockSession]
-    with MutableListDAO[IntModel, Int, MockSession]
+  class IntDAO extends DAO[IntModel, Int]
+    with MutableListDAO[IntModel, Int]
     with IntId {
 
-    override protected def postFetch(m: IntModel)(implicit maybeSession: Option[MockSession], ec: ExecutionContext) = {
+    override protected def postFetch(m: IntModel)(implicit ec: ExecutionContext) = {
       m.foo = Some(m.id.get + " ok")
       Future.successful(m)
-    }
-
-    override protected def addImpl(m: IntModel)(implicit maybeSession: Option[MockSession], ec: ExecutionContext) = maybeSession match {
-      case Some(sess) if sess.user.userId == m.userId => Future.successful {
-        m.id = nextId
-        _all += m
-        m
-      }
-      case Some(sess) => throw new Exception("Cannot create a model instance for another user")
-      case None       => throw new Exception("Session required to add!")
-    }
-
-    override protected def allImpl(implicit maybeSession: Option[MockSession], ec: ExecutionContext): Future[Iterable[IntModel]] = maybeSession match {
-      case Some(sess) => Future.successful {
-        _all.filter(_.userId == sess.user.userId).toIterable
-      }
-      case None => Future.failed { new Exception("Session required!") }
     }
   }
 
   trait DAOContext extends Scope {
     val intDAO = new IntDAO
-    val mockSession = MockSession("abcds", MockUser("first"))
-    implicit val maybeMockSession = Some(mockSession)
     intDAO.add(IntModel(None, "first", "first"))
-    intDAO.add(IntModel(None, "second", "second"))(Some(MockSession("efg", MockUser("second"))), global)
+    intDAO.add(IntModel(None, "second", "second"))
     intDAO.add(IntModel(None, "anotherfirst", "first"))
   }
 

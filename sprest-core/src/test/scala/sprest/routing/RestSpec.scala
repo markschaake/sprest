@@ -34,42 +34,29 @@ class RestSpec extends Specification
 
   override def maybeSession = provide(Some(mockSession))
 
-  implicit val maybeMockSession = Some(mockSession)
-
   def actorRefFactory = system
 
   case class IntModel(var id: Option[Int], name: String, userId: String) extends Model[Int]
 
   implicit val IntModelFormat = jsonFormat(IntModel, "id", "name", "userId")
 
-  class IntDAO extends DAO[IntModel, Int, MockSession]
-    with MutableListDAO[IntModel, Int, MockSession]
+  class IntDAO extends DAO[IntModel, Int]
+    with MutableListDAO[IntModel, Int]
     with IntId {
 
-    override protected def addImpl(m: IntModel)(implicit maybeSession: Option[MockSession], ec: ExecutionContext) = maybeSession match {
-      case Some(sess) if sess.user.userId == m.userId => Future.successful {
-        m.id = nextId
-        _all += m
-        m
-      }
-      case Some(sess) => throw new Exception("Cannot create a model instance for another user")
-      case None       => throw new Exception("Session required to add!")
+    override protected def addImpl(m: IntModel)(implicit ec: ExecutionContext) = Future.successful {
+      m.id = nextId
+      _all += m
+      m
     }
 
-    override protected def allImpl(implicit maybeSession: Option[MockSession], ec: ExecutionContext): Future[Iterable[IntModel]] = maybeSession match {
-      case Some(sess) => Future.successful {
-        _all.filter(_.userId == sess.user.userId).toIterable
-      }
-      case None => Future.failed { new Exception("Session required!") }
-    }
   }
 
   "REST routes" should {
     "GET returns all filtered by session context" in new RoutesContext {
       Get("/ints") ~> intRoutes ~> check {
         val result = entityAs[List[IntModel]]
-        result must have size 2
-        result map { res => res.userId must_== "first" }
+        result must have size 3
       }
     }
 
@@ -102,10 +89,10 @@ class RestSpec extends Specification
 
     "DELETE by id removes model" in new RoutesContext {
       Get("/ints") ~> intRoutes ~> check {
-        entityAs[List[IntModel]] must have size 2
+        entityAs[List[IntModel]] must have size 3
         Delete("/ints/1") ~> intRoutes ~> check {
           Get("/ints") ~> intRoutes ~> check {
-            entityAs[List[IntModel]] must have size 1
+            entityAs[List[IntModel]] must have size 2
           }
         }
       }
@@ -118,7 +105,7 @@ class RestSpec extends Specification
     val intRoutes = restInt("ints", intDAO)
 
     intDAO.add(IntModel(None, "first", "first"))
-    intDAO.add(IntModel(None, "second", "second"))(Some(MockSession("efg", MockUser("second"))), system.dispatcher)
+    intDAO.add(IntModel(None, "second", "second"))
     intDAO.add(IntModel(None, "anotherfirst", "first"))
   }
 }

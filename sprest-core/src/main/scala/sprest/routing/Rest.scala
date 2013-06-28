@@ -41,7 +41,7 @@ trait RestRoutes { this: HttpService =>
    * @param dao for model M
    * @param idMatcher PathMatcher that extracts type T from route
    */
-  def rest[M <: Model[T], T](name: String, dao: DAO[M, T, SessionImpl], idMatcher: PathMatcher[T :: HNil])(implicit marshaller: RootJsonFormat[M]) = {
+  def rest[M <: Model[T], T](name: String, dao: DAO[M, T], idMatcher: PathMatcher[T :: HNil])(implicit marshaller: RootJsonFormat[M]) = {
     path(name) {
       maybeSession { implicit session =>
         get {
@@ -83,28 +83,28 @@ trait RestRoutes { this: HttpService =>
   /**
    * Generates REST routes with Long id
    */
-  def restLong[M <: Model[Long]](name: String, dao: DAO[M, Long, SessionImpl])(implicit marshaller: RootJsonFormat[M]) =
+  def restLong[M <: Model[Long]](name: String, dao: DAO[M, Long])(implicit marshaller: RootJsonFormat[M]) =
     rest[M, Long](name, dao, LongNumber)
 
   /**
    * Generates REST routes with Int id
    */
-  def restInt[M <: Model[Int]](name: String, dao: DAO[M, Int, SessionImpl])(implicit marshaller: RootJsonFormat[M]) =
+  def restInt[M <: Model[Int]](name: String, dao: DAO[M, Int])(implicit marshaller: RootJsonFormat[M]) =
     rest[M, Int](name, dao, IntNumber)
 
   /**
    * Generates REST routes with java.util.UUID id
    */
-  def restUUID[M <: Model[UUID]](name: String, dao: DAO[M, UUID, SessionImpl])(implicit marshaller: RootJsonFormat[M]) =
+  def restUUID[M <: Model[UUID]](name: String, dao: DAO[M, UUID])(implicit marshaller: RootJsonFormat[M]) =
     rest[M, UUID](name, dao, JavaUUID)
 
   /**
    * Generates REST routes with String UUID
    */
-  def restUUIDString[M <: Model[String]](name: String, dao: DAO[M, String, SessionImpl])(implicit marshaller: RootJsonFormat[M]) =
+  def restUUIDString[M <: Model[String]](name: String, dao: DAO[M, String])(implicit marshaller: RootJsonFormat[M]) =
     rest[M, String](name, dao, JavaUUIDString)
 
-  def restString[M <: Model[String]](name: String, dao: DAO[M, String, SessionImpl])(implicit marshaller: RootJsonFormat[M]) =
+  def restString[M <: Model[String]](name: String, dao: DAO[M, String])(implicit marshaller: RootJsonFormat[M]) =
     rest[M, String](name, dao, Segment)
 
 }
