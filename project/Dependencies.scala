@@ -23,7 +23,7 @@ object Dependencies {
   val logback = "ch.qos.logback" % "logback-classic" % "1.0.1"
   val joda = "joda-time" % "joda-time" % "2.1"
   val jodaConvert = "org.joda" % "joda-convert" % "1.3"
-  val specs2 = "org.specs2" %% "specs2" % "1.14"
+  val specs2 = "org.specs2" %% "specs2" % "2.1"
   val akkaActor = "com.typesafe.akka" %% "akka-actor" % "2.1.4"
   val akkaTestKit = "com.typesafe.akka" %% "akka-testkit" % "2.2.0-RC1"
   val slick = "com.typesafe.slick" %% "slick" % "1.0.0"
