@@ -2,6 +2,7 @@ package sprest.security
 
 import java.security.{ SecureRandom, MessageDigest }
 import spray.json.DefaultJsonProtocol
+import sprest.util.enum._
 
 case class EncryptedPassword(salt: String, encryptedPass: String) {
   def saltBytes = Hex.toBytes(salt)
@@ -19,22 +20,22 @@ object EncryptedPassword extends DefaultJsonProtocol {
   implicit val encryptedPasswordFormat = jsonFormat2(EncryptedPassword.apply)
 }
 
-sealed abstract class HashingAlgorithm(val name: String) {
-  HashingAlgorithm._all += this
-}
-
-object HashingAlgorithm {
-
-  private val _all = scala.collection.mutable.ListBuffer[HashingAlgorithm]()
-
-  def all = _all.toList
-
+sealed abstract class HashingAlgorithm(name: String) extends Enum[HashingAlgorithm](name)
+object HashingAlgorithm extends EnumCompanion[HashingAlgorithm] {
   case object MD2 extends HashingAlgorithm("MD2")
   case object MD5 extends HashingAlgorithm("MD5")
   case object SHA1 extends HashingAlgorithm("SHA-1")
   case object SHA256 extends HashingAlgorithm("SHA-256")
   case object SHA384 extends HashingAlgorithm("SHA-384")
   case object SHA512 extends HashingAlgorithm("SHA-512")
+
+  register(
+    MD2,
+    MD5,
+    SHA1,
+    SHA256,
+    SHA384,
+    SHA512)
 }
 
 trait PasswordSaltingComponent {
