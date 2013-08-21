@@ -37,6 +37,21 @@ trait ReactiveMongoPersistence {
 
     def find[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext) = collection.find(obj).cursor[M].toList
 
+    /**
+     * Projects the query into an object of type P
+     */
+    def findAs[P](selector: JsObject, projection: JsObject)(implicit reads: RootJsonReader[P], ec: ExecutionContext) =
+      collection.find(selector, projection).cursor[P].toList
+
+    def findAs[P](selector: JsObject)(implicit projection: Projection[M, P], ec: ExecutionContext) =
+      collection.find(selector, projection.projection).cursor[P](projection.reads, ec).toList
+
+    def findOneAs[P](selector: JsObject)(implicit projection: Projection[M, P], ec: ExecutionContext) =
+      findAs[P](selector) map { _.headOption }
+
+    def findOneAs[P](selector: JsObject, projection: JsObject)(implicit reads: RootJsonReader[P], ec: ExecutionContext) =
+      findAs[P](selector, projection) map { _.headOption }
+
     protected def uncheckedRemoveById(id: ID)(implicit ec: ExecutionContext) = collection.uncheckedRemove(findByIdQuery(id))
 
     protected def checkedRemoveById(id: ID)(implicit ec: ExecutionContext) = collection.remove(findByIdQuery(id))

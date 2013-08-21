@@ -40,11 +40,13 @@ object Build extends Build {
 
   lazy val sprestReactiveMongo = Project("sprest-reactivemongo", file("sprest-reactivemongo"))
     .dependsOn(core)
+    .configs( IntegrationTest )
+    .settings( Defaults.itSettings : _*)
     .settings(sprestModuleSettings: _*)
     .settings(libraryDependencies ++=
       compile(reactiveMongo) ++
       compile(joda) ++
       compile(jodaConvert) ++
-      test(specs2))
+      testAndIt(specs2))
 
 }
