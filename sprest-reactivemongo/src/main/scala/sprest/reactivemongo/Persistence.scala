@@ -35,7 +35,11 @@ trait ReactiveMongoPersistence {
         collection.find(findByIdQuery(selector.id)).cursor[M].toList.map(_.headOption)
       }
 
-    def find[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext) = collection.find(obj).cursor[M].toList
+    def find[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] =
+      collection.find(obj).cursor[M].toList
+
+    def findOne[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[Option[M]] =
+      collection.find(obj).cursor[M].toList.map(_.headOption)
 
     /**
      * Projects the query into an object of type P
