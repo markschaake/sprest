@@ -20,14 +20,6 @@ class RestSpec extends Specification
   with spray.httpx.SprayJsonSupport
   with DefaultJsonProtocol {
 
-  case class MockUser(userId: String) extends User {
-    type ID = String
-  }
-
-  case class MockSession(sessionId: String, user: MockUser) extends Session {
-    type ID = String
-  }
-
   def actorRefFactory = system
 
   case class IntModel(var id: Option[Int], name: String, userId: String) extends Model[Int]
