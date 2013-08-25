@@ -28,12 +28,6 @@ class RestSpec extends Specification
     type ID = String
   }
 
-  type SessionImpl = MockSession
-
-  val mockSession = MockSession("abcds", MockUser("first"))
-
-  override def maybeSession = provide(Some(mockSession))
-
   def actorRefFactory = system
 
   case class IntModel(var id: Option[Int], name: String, userId: String) extends Model[Int]
