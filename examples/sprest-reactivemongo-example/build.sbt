@@ -19,8 +19,6 @@ libraryDependencies ++= Seq(
   "org.specs2" %% "specs2" % "2.1" % "test"
 )
 
-seq(Twirl.settings: _*)
-
 seq(Revolver.settings: _*)
 
 seq(coffeeSettings: _*)

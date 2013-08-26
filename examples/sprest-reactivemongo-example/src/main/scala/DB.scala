@@ -25,7 +25,7 @@ object DB extends ReactiveMongoPersistence {
 
     case class Selector(id: String) extends UniqueSelector[M, String]
 
-    override implicit def generateSelector(id: String) = Selector(id)
+    override def generateSelector(id: String) = Selector(id)
     override protected def addImpl(m: M)(implicit ec: ExecutionContext) = doAdd(m)
     override protected def updateImpl(m: M)(implicit ec: ExecutionContext) = doUpdate(m)
     override def remove(selector: Selector)(implicit ec: ExecutionContext) = uncheckedRemoveById(selector.id)
