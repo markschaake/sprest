@@ -10,7 +10,6 @@ import spray.json.RootJsonFormat
 
 trait DB extends SlickPersistence {
 
-  import sprest.models.UUIDStringId
   import sprest.models.UniqueSelector
   import models._
   import com.typesafe.config.ConfigFactory
@@ -18,8 +17,11 @@ trait DB extends SlickPersistence {
   object DBConfig {
     private val conf = ConfigFactory.load()
     def get(key: String): Option[String] = {
-      // any -D arguments take precedence over application.conf settings:
-      Option(System.getProperty(key)) orElse Option(conf.getString(key))
+      // Note that any -D command-line arguments take precedence over application.conf settings
+      // If you are using sbt-revolver, you can do this in the SBT console:
+      // > re-start --- -Ddb.vendor=mysql -Ddb.user=me -Ddb.password=secret -Ddb.url="jdbc:..."
+      // Alternatively, you can just modify application.conf
+      Option(conf.getString(key))
     }
 
     lazy val vendor = get("db.vendor")
