@@ -10,6 +10,7 @@ This example application illustrates the following funtionality:
 ## Pre-requisites ##
 
 * You must have MongoDB installed locally and running on the default port (27017)
+* Requires SBT 0.13 launcher
 
 ## Run the example app ##
 
