@@ -1,4 +1,4 @@
-# Example of using sprest-reactivemongo #
+# Example of using sprest-slick #
 
 This example application illustrates the following funtionality:
 
