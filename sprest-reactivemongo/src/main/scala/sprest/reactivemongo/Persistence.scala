@@ -11,13 +11,29 @@ import sprest.reactivemongo.typemappers._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 import play.api.libs.iteratee.Iteratee
+import reactivemongo.api._
+import reactivemongo.bson._
+import reactivemongo.bson.{ BSONReader, BSONWriter }
+import reactivemongo.bson.DefaultBSONHandlers._
+import spray.json._
+
+case class Sort(fieldName: String, direction: Sort.SortDirection)
+object Sort {
+  sealed abstract class SortDirection(val value: Int)
+  case object Asc extends SortDirection(1)
+  case object Desc extends SortDirection(-1)
+
+  def apply(fieldAndSort: (String, SortDirection)): Sort = apply(fieldAndSort._1, fieldAndSort._2)
+
+  implicit val bsonWriter = new BSONDocumentWriter[Sort] {
+    override def write(sort: Sort): BSONDocument = {
+      BSONDocument(elements = List(
+        sort.fieldName -> BSONInteger(sort.direction.value)))
+    }
+  }
+}
 
 trait ReactiveMongoPersistence {
-  import reactivemongo.api._
-  import reactivemongo.bson._
-  import reactivemongo.bson.{ BSONReader, BSONWriter }
-  import reactivemongo.bson.DefaultBSONHandlers._
-  import spray.json._
 
   abstract class CollectionDAO[M <: Model[ID], ID](collection: BSONCollection)(implicit jsonFormat: RootJsonFormat[M], jsonMapper: SprayJsonTypeMapper, idMapper: BSONTypeMapper[ID])
     extends DAO[M, ID] with BsonProtocol with Logging {
@@ -43,6 +59,9 @@ trait ReactiveMongoPersistence {
     def count[T](query: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[Int] =
       collection.db.command(Count(collection.name, Some(writer.write(query))))
 
+    def queryBuilder[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext) =
+      collection.find(obj)
+
     /**
      * Returns the query result as a [[reactivemongo.api.Cursor[M]]] object
      *
@@ -50,10 +69,17 @@ trait ReactiveMongoPersistence {
      * @param writer implicit BSONDocumentWriter for T
      * @param ec implicit ExecutionContext
      */
-    def findCursor[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Cursor[M] =
-      collection.find(obj).cursor[M]
+    def findCursor[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Cursor[M] = queryBuilder(obj).cursor[M]
 
     def find[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = findCursor(obj).toList
+
+    def find[T](obj: T, sorts: Sort*)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = {
+      // generate the sort BSONDocument
+      val sortDoc = sorts.foldLeft(BSONDocument.empty) { (doc, sort) =>
+        doc.add(Sort.bsonWriter.write(sort))
+      }
+      queryBuilder(obj).sort(sortDoc).cursor[M].toList
+    }
 
     def findOne[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[Option[M]] = findCursor(obj).headOption
 

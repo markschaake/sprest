@@ -88,6 +88,30 @@ class PersistenceSpec extends Specification {
     }
   }
 
+  "find" should {
+    "sort ascending" in new MongoScope {
+      val fooDao= new FooDAO("findAsc")
+      val added1 = blockForResult(fooDao.add(Foo(name = "Foo1", age = 1)))
+      val added2 = blockForResult(fooDao.add(Foo(name = "Foo2", age = 3)))
+      val added3 = blockForResult(fooDao.add(Foo(name = "Foo3", age = 2)))
+      val queryResult = blockForResult(fooDao.find(JsObject(), Sort("age" -> Sort.Asc)))
+      queryResult(0).age must_== 1
+      queryResult(1).age must_== 2
+      queryResult(2).age must_== 3
+    }
+
+    "sort descending" in new MongoScope {
+      val fooDao= new FooDAO("findDesc")
+      val added1 = blockForResult(fooDao.add(Foo(name = "Foo1", age = 1)))
+      val added2 = blockForResult(fooDao.add(Foo(name = "Foo2", age = 3)))
+      val added3 = blockForResult(fooDao.add(Foo(name = "Foo3", age = 2)))
+      val queryResult = blockForResult(fooDao.find(JsObject(), Sort("age" -> Sort.Desc)))
+      queryResult(0).age must_== 3
+      queryResult(1).age must_== 2
+      queryResult(2).age must_== 1
+    }
+  }
+
   "findAs" should {
     "project to another object with explicit projection" in new MongoScope {
       // do the insert first:
