@@ -63,7 +63,7 @@ trait ReactiveMongoPersistence {
       collection.find(obj)
 
     /**
-     * Returns the query result as a [[reactivemongo.api.Cursor[M]]] object
+     * Returns the query result as a [[reactivemongo.api.Cursor]] object
      *
      * @param obj the query object that can be converted into a BSONDocument
      * @param writer implicit BSONDocumentWriter for T
@@ -73,7 +73,13 @@ trait ReactiveMongoPersistence {
 
     def find[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = findCursor(obj).toList
 
-    def find[T](obj: T, sorts: Sort*)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = {
+    def find[T](obj: T, sort: Sort)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = {
+      // generate the sort BSONDocument
+      val sortDoc = BSONDocument.empty.add(Sort.bsonWriter.write(sort))
+      queryBuilder(obj).sort(sortDoc).cursor[M].toList
+    }
+
+    def find[T](obj: T, sorts: List[Sort])(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = {
       // generate the sort BSONDocument
       val sortDoc = sorts.foldLeft(BSONDocument.empty) { (doc, sort) =>
         doc.add(Sort.bsonWriter.write(sort))

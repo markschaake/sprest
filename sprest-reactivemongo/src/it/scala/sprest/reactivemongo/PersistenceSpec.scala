@@ -110,6 +110,20 @@ class PersistenceSpec extends Specification {
       queryResult(1).age must_== 2
       queryResult(2).age must_== 1
     }
+
+    "sort with multiple sorts" in new MongoScope {
+      val fooDao= new FooDAO("findMultiSort")
+      val added1 = blockForResult(fooDao.add(Foo(name = "FooA", age = 1)))
+      val added2 = blockForResult(fooDao.add(Foo(name = "FooZ", age = 2)))
+      val added3 = blockForResult(fooDao.add(Foo(name = "FooH", age = 2)))
+      val queryResult = blockForResult(fooDao.find(JsObject(), List(Sort("age" -> Sort.Desc), Sort("name" -> Sort.Asc))))
+      queryResult(0).age must_== 2
+      queryResult(0).name must_== "FooH"
+      queryResult(1).age must_== 2
+      queryResult(1).name must_== "FooZ"
+      queryResult(2).age must_== 1
+      
+    }
   }
 
   "findAs" should {
