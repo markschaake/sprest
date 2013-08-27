@@ -1,6 +1,8 @@
 package sprest.reactivemongo
 
 import reactivemongo.api.collections.default.BSONCollection
+import reactivemongo.core.commands.Command
+import reactivemongo.core.commands.Count
 import sprest.Implicits._
 import sprest.Logging
 import sprest.models._
@@ -35,17 +37,34 @@ trait ReactiveMongoPersistence {
         collection.find(findByIdQuery(selector.id)).cursor[M].toList.map(_.headOption)
       }
 
-    def find[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] =
-      collection.find(obj).cursor[M].toList
+    def count()(implicit ec: ExecutionContext): Future[Int] =
+      collection.db.command(Count(collection.name))
 
-    def findOne[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[Option[M]] =
-      collection.find(obj).cursor[M].toList.map(_.headOption)
+    def count[T](query: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[Int] =
+      collection.db.command(Count(collection.name, Some(writer.write(query))))
+
+    /**
+     * Returns the query result as a [[reactivemongo.api.Cursor[M]]] object
+     *
+     * @param obj the query object that can be converted into a BSONDocument
+     * @param writer implicit BSONDocumentWriter for T
+     * @param ec implicit ExecutionContext
+     */
+    def findCursor[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Cursor[M] =
+      collection.find(obj).cursor[M]
+
+    def find[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = findCursor(obj).toList
+
+    def findOne[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[Option[M]] = findCursor(obj).headOption
+
+    def findAsCursor[P](selector: JsObject, projection: JsObject)(implicit reads: RootJsonReader[P], ec: ExecutionContext) =
+      collection.find(selector, projection).cursor[P]
 
     /**
      * Projects the query into an object of type P
      */
     def findAs[P](selector: JsObject, projection: JsObject)(implicit reads: RootJsonReader[P], ec: ExecutionContext) =
-      collection.find(selector, projection).cursor[P].toList
+      findAsCursor[P](selector, projection).toList
 
     def findAs[P](selector: JsObject)(implicit projection: Projection[M, P], ec: ExecutionContext) =
       collection.find(selector, projection.projection).cursor[P](projection.reads, ec).toList

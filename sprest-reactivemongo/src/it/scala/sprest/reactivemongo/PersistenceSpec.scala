@@ -122,7 +122,7 @@ class PersistenceSpec extends Specification {
   "findOneAs" should {
     "project to another object explicitly" in new MongoScope {
       // do the insert first:
-      val fooDao = new FooDAO("findAs")
+      val fooDao = new FooDAO("findOneAs")
       val added = blockForResult(fooDao.add(Foo(name = "Foo2", age = 1234)))
       val projection = JsObject("name" -> 1.toJson, "_id" -> 0.toJson)
       val foundSubFoo = blockForResult(fooDao.findOneAs[SubFoo](findByIdQuery(added.id.get), projection))
@@ -133,7 +133,7 @@ class PersistenceSpec extends Specification {
 
     "project to another object implicitly" in new MongoScope {
       // do the insert first:
-      val fooDao = new FooDAO("findAs")
+      val fooDao = new FooDAO("findOneAs")
       val added = blockForResult(fooDao.add(Foo(name = "Foo2", age = 1234)))
       val foundSubFoo = blockForResult(fooDao.findOneAs[SubFoo](findByIdQuery(added.id.get)))
 
@@ -142,10 +142,32 @@ class PersistenceSpec extends Specification {
     }
 
     "project to another object with different projection implicitly" in new MongoScope {
-      val barDao = new BarDAO("findAs")
+      val barDao = new BarDAO("findOneAs")
       val added = blockForResult(barDao.add(Bar(fullname = "Big Guy 2", spec = 10.5)))
       val foundSubFoo = blockForResult(barDao.findOneAs[SubFoo](findByIdQuery(added.id.get)))
       foundSubFoo must beSome(SubFoo("Big Guy 2"))
+    }
+  }
+
+  "count" should {
+    "return count of all in a collection" in new MongoScope {
+      val fooDao= new FooDAO("count")
+      val added1 = blockForResult(fooDao.add(Foo(name = "Foo1", age = 1)))
+      val added2 = blockForResult(fooDao.add(Foo(name = "Foo2", age = 3)))
+      val added3 = blockForResult(fooDao.add(Foo(name = "Foo3", age = 3)))
+
+      val count = blockForResult(fooDao.count())
+      count must_== 3
+    }
+
+    "return count of result of a query" in new MongoScope {
+      val fooDao= new FooDAO("countWithQuery")
+      val added1 = blockForResult(fooDao.add(Foo(name = "Foo1", age = 1)))
+      val added2 = blockForResult(fooDao.add(Foo(name = "Foo2", age = 3)))
+      val added3 = blockForResult(fooDao.add(Foo(name = "Foo3", age = 3)))
+
+      val count = blockForResult(fooDao.count(JsObject("age" -> 3.toJson)))
+      count must_== 2
     }
   }
 
