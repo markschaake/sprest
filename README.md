@@ -23,12 +23,12 @@ Provides [ReactiveMongo](http://reactivemongo.org/) DAO implementation.
 ## SBT ##
 Sprest is published to a GitHub-based repository. To use it, add the following resolver:
 
-    resolvers += "sprest snapshots" at "http://markschaake.github.com/snapshots"
+    resolvers += "sprest snapshots" at "http://markschaake.github.com/releases"
 
 Then you can include sprest libraries:
 
-    libraryDependencies += "sprest" %% "sprest-core" % "0.2.0-SNAPSHOT"
-	libraryDependencies += "sprest" %% "sprest-slick" % "0.2.0-SNAPSHOT"
-	libraryDependencies += "sprest" %% "sprest-reactivemongo" % "0.2.0-SNAPSHOT"
+    libraryDependencies += "sprest" %% "sprest-core" % "0.2.0"
+	libraryDependencies += "sprest" %% "sprest-slick" % "0.2.0"
+	libraryDependencies += "sprest" %% "sprest-reactivemongo" % "0.2.0"
 
 Note: it is unnecessary to explicitly declare the "sprest-core" dependency if you declare a dependency on a library that depends upon the core (such as sprest-slick or sprest-reactivemongo).
