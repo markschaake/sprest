@@ -3,7 +3,7 @@ import Keys._
 
 object BuildSettings {
 
-  val VERSION = "0.2.0-SNAPSHOT"
+  val VERSION = "0.3.0-SNAPSHOT"
 
   def versionIsSnapshot = VERSION.endsWith("SNAPSHOT")
 
