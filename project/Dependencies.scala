@@ -3,6 +3,7 @@ import sbt._
 object Dependencies {
   val resolutionRepos = Seq(
     "spray repo" at "http://repo.spray.io",
+    "spray nightlies" at "http://nightlies.spray.io",
     "Mark Schaake" at "http://markschaake.github.com/snapshots",
     "Typesafe releases" at "http://repo.typesafe.com/typesafe/releases",
     "Sonatype snapshots" at "https://oss.sonatype.org/service/local/repositories/snapshots/content")
@@ -14,7 +15,7 @@ object Dependencies {
   def runtime(deps: ModuleID*): Seq[ModuleID] = deps map (_ % "runtime")
   def container(deps: ModuleID*): Seq[ModuleID] = deps map (_ % "container")
 
-  val sprayVersion = "1.2-M8"
+  val sprayVersion = "1.2-20130822"
   def sprayModule(id: String) = "io.spray" % id % sprayVersion
 
   val akkaVersion = "2.2.1"

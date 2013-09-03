@@ -27,7 +27,7 @@ trait RestRoutes { this: HttpService =>
   import system.dispatcher
 
   /** Custom PathMatcher for dealing with UUID's stored as String (and not as UUID objects) */
-  val JavaUUIDString: PathMatcher[java.lang.String :: HNil] = JavaUUID.map(foo => foo.toString :: HNil)
+  val JavaUUIDString: PathMatcher[java.lang.String :: HNil] = JavaUUID.map(foo => foo.toString)
 
   /**
    * Directive to generate REST routes for the given model with id of type T
