@@ -10,7 +10,7 @@ class QueryDSLSpec extends Specification {
 
   "$exists" should {
     "generate json" in {
-      $exists("foo" -> false) must_== JsObject("foo" -> JsObject("$exists" -> JsFalse))
+      $exists("foo" -> false) must_== "foo" -> JsObject("$exists" -> JsFalse)
     }
   }
 
