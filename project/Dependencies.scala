@@ -32,5 +32,5 @@ object Dependencies {
   val akkaActor = akkaModule("akka-actor")
   val akkaTestKit = akkaModule("akka-testkit")
   val slick = "com.typesafe.slick" %% "slick" % "1.0.0"
-  val reactiveMongo = "org.reactivemongo" %% "reactivemongo" % "0.10-SNAPSHOT"
+  val reactiveMongo = "org.reactivemongo" %% "reactivemongo" % "0.10.0-SNAPSHOT"
 }

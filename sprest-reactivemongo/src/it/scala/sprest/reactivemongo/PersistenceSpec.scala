@@ -1,6 +1,7 @@
 package sprest.reactivemongo
 
 import org.specs2.mutable._
+import org.specs2.specification.Scope
 import reactivemongo.bson.BSONDocument
 import reactivemongo.bson.BSONDocumentWriter
 import reactivemongo.core.commands.LastError
@@ -23,7 +24,7 @@ class PersistenceSpec extends Specification {
   lazy val connection = driver.connection(List("localhost"))
   lazy val mongoDB: reactivemongo.api.DefaultDB = connection("sprest-reactivemongo-test")
 
-  trait MongoScope extends After with DefaultJsonProtocol with ReactiveMongoPersistence {
+  trait MongoScope extends Scope with DefaultJsonProtocol with ReactiveMongoPersistence {
 
     def collection(collName: String) = mongoDB(collName)
     implicit object typeMapper extends SprayJsonTypeMapper with NormalizedIdTransformer
@@ -71,10 +72,6 @@ class PersistenceSpec extends Specification {
 
     class FooDAO(collName: String) extends BasicDAO[Foo](collName)
     class BarDAO(collName: String) extends BasicDAO[Bar](collName)
-
-    override def after = {
-      println("yo")
-    }
 
   }
 
