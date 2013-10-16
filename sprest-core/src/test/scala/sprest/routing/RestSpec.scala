@@ -41,14 +41,14 @@ class RestSpec extends Specification
   "REST routes" should {
     "GET returns all filtered by session context" in new RoutesContext {
       Get("/ints") ~> intRoutes ~> check {
-        val result = entityAs[List[IntModel]]
+        val result = responseAs[List[IntModel]]
         result must have size 3
       }
     }
 
     "POST adds" in new RoutesContext {
       Post("/ints", IntModel(None, "third", "first")) ~> intRoutes ~> check {
-        val model = entityAs[IntModel]
+        val model = responseAs[IntModel]
         model.id must_== Some(4)
         model.name must_== "third"
       }
@@ -56,7 +56,7 @@ class RestSpec extends Specification
 
     "GET by id returns single model" in new RoutesContext {
       Get("/ints/2") ~> intRoutes ~> check {
-        val m = entityAs[IntModel]
+        val m = responseAs[IntModel]
         m.name must_== "second"
       }
     }
@@ -69,16 +69,16 @@ class RestSpec extends Specification
 
     "PUT by id updates model" in new RoutesContext {
       Put("/ints/2", IntModel(Some(2), "2nd", "2nd")) ~> intRoutes ~> check {
-        entityAs[IntModel].name must_== "2nd"
+        responseAs[IntModel].name must_== "2nd"
       }
     }
 
     "DELETE by id removes model" in new RoutesContext {
       Get("/ints") ~> intRoutes ~> check {
-        entityAs[List[IntModel]] must have size 3
+        responseAs[List[IntModel]] must have size 3
         Delete("/ints/1") ~> intRoutes ~> check {
           Get("/ints") ~> intRoutes ~> check {
-            entityAs[List[IntModel]] must have size 2
+            responseAs[List[IntModel]] must have size 2
           }
         }
       }
