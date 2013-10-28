@@ -7,7 +7,7 @@ object Build extends Build {
   import Dependencies._
 
   lazy val root = Project("root", file("."))
-    .aggregate(macros, core, sprestSlick, sprestReactiveMongo)
+    .aggregate(macros, core, sprestSlick, sprestReactiveMongo, sprestTestKit)
     .settings(basicSettings: _*)
     .settings(noPublishing: _*)
 
@@ -28,6 +28,12 @@ object Build extends Build {
       test(specs2) ++
       test(sprayTestKit))
 
+  lazy val sprestTestKit = Project("sprest-testkit", file("sprest-testkit"))
+    .settings(sprestModuleSettings: _*)
+    .settings(libraryDependencies ++=
+      compile(specs2) ++
+      compile(sprayTestKit) ++
+      compile(akkaTestKit))
 
   lazy val sprestSlick = Project("sprest-slick", file("sprest-slick"))
     .dependsOn(core)
