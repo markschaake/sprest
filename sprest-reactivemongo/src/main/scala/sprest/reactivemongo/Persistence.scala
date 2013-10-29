@@ -114,25 +114,35 @@ trait ReactiveMongoPersistence {
     /** Inserts the model */
     protected def doAdd(m: M)(implicit ec: ExecutionContext): Future[M] = m.id match {
       case Some(id) =>
-        collection.insert(m)
-        Future.successful(m)
+        collection.insert(m) flatMap { lastError =>
+          if (lastError.ok)
+            Future.successful(m)
+          else
+            Future.failed(lastError.getCause())
+        }
       case None =>
         m.id = nextId
-        collection.uncheckedInsert(m)
-        Future.successful(m)
+        collection.insert(m) flatMap { lastError =>
+          if (lastError.ok)
+            Future.successful(m)
+          else
+            Future.failed(lastError.getCause())
+        }
     }
 
     /** Updates the model without checks */
     protected def doUpdate(m: M)(implicit ec: ExecutionContext): Future[M] = m.id match {
       case Some(id) =>
-        collection.uncheckedUpdate(
+        collection.update(
           selector = findByIdQuery(id),
           update = m,
           upsert = true,
-          multi = false)
-        // TODO how to handle errors here?
-        // Maybe we update the sprest-core DAO to return a Future[Try[M]]?
-        Future.successful(m)
+          multi = false) flatMap { lastError =>
+            if (lastError.ok)
+              Future.successful(m)
+            else
+              Future.failed(lastError.getCause())
+          }
       case None => throw new Exception("id required for update")
     }
   }

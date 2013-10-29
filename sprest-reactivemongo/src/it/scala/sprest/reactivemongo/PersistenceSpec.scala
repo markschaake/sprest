@@ -77,14 +77,6 @@ class PersistenceSpec extends Specification {
 
   sequential
 
-  "Warmup" should {
-    "spin up reactive-mongo" in new MongoScope {
-      val coll = collection("fooy")
-      val lastError = blockForLastError(coll.insert(JsObject("_id" -> "def".toJson, "name" -> "Joe".toJson)))
-      lastError.inError must beFalse
-    }
-  }
-
   "find" should {
     "sort ascending" in new MongoScope {
       val fooDao= new FooDAO("findAsc")
