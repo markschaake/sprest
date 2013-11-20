@@ -15,7 +15,7 @@ object Dependencies {
   def runtime(deps: ModuleID*): Seq[ModuleID] = deps map (_ % "runtime")
   def container(deps: ModuleID*): Seq[ModuleID] = deps map (_ % "container")
 
-  val sprayVersion = "1.2-RC2"
+  val sprayVersion = "1.2-RC4"
   def sprayModule(id: String) = "io.spray" % id % sprayVersion
 
   val akkaVersion = "2.2.3"
@@ -25,7 +25,7 @@ object Dependencies {
   val sprayRouting = sprayModule("spray-routing")
   val sprayTestKit = sprayModule("spray-testkit")
   val sprayJson = "io.spray" %% "spray-json" % "1.2.5"
-  val logback = "ch.qos.logback" % "logback-classic" % "1.0.1"
+  val logback = "ch.qos.logback" % "logback-classic" % "1.0.7"
   val joda = "joda-time" % "joda-time" % "2.3"
   val jodaConvert = "org.joda" % "joda-convert" % "1.5"
   val specs2 = "org.specs2" %% "specs2" % "2.2"
