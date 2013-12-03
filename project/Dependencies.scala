@@ -15,7 +15,7 @@ object Dependencies {
   def runtime(deps: ModuleID*): Seq[ModuleID] = deps map (_ % "runtime")
   def container(deps: ModuleID*): Seq[ModuleID] = deps map (_ % "container")
 
-  val sprayVersion = "1.2-RC4"
+  val sprayVersion = "1.2.0"
   def sprayModule(id: String) = "io.spray" % id % sprayVersion
 
   val akkaVersion = "2.2.3"
