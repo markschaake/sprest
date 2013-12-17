@@ -71,23 +71,27 @@ trait ReactiveMongoPersistence {
      */
     def findCursor[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Cursor[M] = queryBuilder(obj).cursor[M]
 
-    def find[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = findCursor(obj).collect[List]()
+    def find[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = fetchMany {
+      findCursor(obj).collect[Iterable]()
+    }.map(_.toList)
 
-    def find[T](obj: T, sort: Sort)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = {
+    def find[T](obj: T, sort: Sort)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = fetchMany {
       // generate the sort BSONDocument
       val sortDoc = BSONDocument.empty.add(Sort.bsonWriter.write(sort))
-      queryBuilder(obj).sort(sortDoc).cursor[M].collect[List]()
-    }
+      queryBuilder(obj).sort(sortDoc).cursor[M].collect[Iterable]()
+    }.map(_.toList)
 
-    def find[T](obj: T, sorts: List[Sort])(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = {
+    def find[T](obj: T, sorts: List[Sort])(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = fetchMany {
       // generate the sort BSONDocument
       val sortDoc = sorts.foldLeft(BSONDocument.empty) { (doc, sort) =>
         doc.add(Sort.bsonWriter.write(sort))
       }
-      queryBuilder(obj).sort(sortDoc).cursor[M].collect[List]()
-    }
+      queryBuilder(obj).sort(sortDoc).cursor[M].collect[Iterable]()
+    }.map(_.toList)
 
-    def findOne[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[Option[M]] = findCursor(obj).headOption
+    def findOne[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[Option[M]] = fetchOne {
+      findCursor(obj).headOption
+    }
 
     def findAsCursor[P](selector: JsObject, projection: JsObject)(implicit reads: RootJsonReader[P], ec: ExecutionContext) =
       collection.find(selector, projection).cursor[P]
