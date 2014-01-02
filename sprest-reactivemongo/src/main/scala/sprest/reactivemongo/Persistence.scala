@@ -46,11 +46,11 @@ trait ReactiveMongoPersistence {
     private val emptyQuery = BSONDocument()
 
     /* ===========> DAO interface <============ */
-    override protected def allImpl(implicit ec: ExecutionContext) = collection.find(emptyQuery).cursor[M].toList
+    override protected def allImpl(implicit ec: ExecutionContext) = collection.find(emptyQuery).cursor[M].collect[List]()
 
     override def findBySelector(selector: Selector)(implicit ec: ExecutionContext) =
       Logger.debugTimedAsync(s"Fetching by selector $selector", logResult = true) {
-        collection.find(findByIdQuery(selector.id)).cursor[M].toList.map(_.headOption)
+        collection.find(findByIdQuery(selector.id)).cursor[M].collect[List]().map(_.headOption)
       }
 
     def count()(implicit ec: ExecutionContext): Future[Int] =
@@ -71,23 +71,27 @@ trait ReactiveMongoPersistence {
      */
     def findCursor[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Cursor[M] = queryBuilder(obj).cursor[M]
 
-    def find[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = findCursor(obj).toList
+    def find[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = fetchMany {
+      findCursor(obj).collect[Iterable]()
+    }.map(_.toList)
 
-    def find[T](obj: T, sort: Sort)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = {
+    def find[T](obj: T, sort: Sort)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = fetchMany {
       // generate the sort BSONDocument
       val sortDoc = BSONDocument.empty.add(Sort.bsonWriter.write(sort))
-      queryBuilder(obj).sort(sortDoc).cursor[M].toList
-    }
+      queryBuilder(obj).sort(sortDoc).cursor[M].collect[Iterable]()
+    }.map(_.toList)
 
-    def find[T](obj: T, sorts: List[Sort])(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = {
+    def find[T](obj: T, sorts: List[Sort])(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = fetchMany {
       // generate the sort BSONDocument
       val sortDoc = sorts.foldLeft(BSONDocument.empty) { (doc, sort) =>
         doc.add(Sort.bsonWriter.write(sort))
       }
-      queryBuilder(obj).sort(sortDoc).cursor[M].toList
-    }
+      queryBuilder(obj).sort(sortDoc).cursor[M].collect[Iterable]()
+    }.map(_.toList)
 
-    def findOne[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[Option[M]] = findCursor(obj).headOption
+    def findOne[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[Option[M]] = fetchOne {
+      findCursor(obj).headOption
+    }
 
     def findAsCursor[P](selector: JsObject, projection: JsObject)(implicit reads: RootJsonReader[P], ec: ExecutionContext) =
       collection.find(selector, projection).cursor[P]
@@ -96,10 +100,10 @@ trait ReactiveMongoPersistence {
      * Projects the query into an object of type P
      */
     def findAs[P](selector: JsObject, projection: JsObject)(implicit reads: RootJsonReader[P], ec: ExecutionContext) =
-      findAsCursor[P](selector, projection).toList
+      findAsCursor[P](selector, projection).collect[List]()
 
     def findAs[P](selector: JsObject)(implicit projection: Projection[M, P], ec: ExecutionContext) =
-      collection.find(selector, projection.projection).cursor[P](projection.reads, ec).toList
+      collection.find(selector, projection.projection).cursor[P](projection.reads, ec).collect[List]()
 
     def findOneAs[P](selector: JsObject)(implicit projection: Projection[M, P], ec: ExecutionContext) =
       findAs[P](selector) map { _.headOption }
@@ -114,25 +118,35 @@ trait ReactiveMongoPersistence {
     /** Inserts the model */
     protected def doAdd(m: M)(implicit ec: ExecutionContext): Future[M] = m.id match {
       case Some(id) =>
-        collection.insert(m)
-        Future.successful(m)
+        collection.insert(m) flatMap { lastError =>
+          if (lastError.ok)
+            Future.successful(m)
+          else
+            Future.failed(lastError.getCause())
+        }
       case None =>
         m.id = nextId
-        collection.uncheckedInsert(m)
-        Future.successful(m)
+        collection.insert(m) flatMap { lastError =>
+          if (lastError.ok)
+            Future.successful(m)
+          else
+            Future.failed(lastError.getCause())
+        }
     }
 
     /** Updates the model without checks */
     protected def doUpdate(m: M)(implicit ec: ExecutionContext): Future[M] = m.id match {
       case Some(id) =>
-        collection.uncheckedUpdate(
+        collection.update(
           selector = findByIdQuery(id),
           update = m,
           upsert = true,
-          multi = false)
-        // TODO how to handle errors here?
-        // Maybe we update the sprest-core DAO to return a Future[Try[M]]?
-        Future.successful(m)
+          multi = false) flatMap { lastError =>
+            if (lastError.ok)
+              Future.successful(m)
+            else
+              Future.failed(lastError.getCause())
+          }
       case None => throw new Exception("id required for update")
     }
   }

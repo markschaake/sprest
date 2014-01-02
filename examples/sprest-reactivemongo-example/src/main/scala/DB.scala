@@ -14,7 +14,7 @@ object DB extends ReactiveMongoPersistence {
   import scala.concurrent.ExecutionContext
 
   val driver = new MongoDriver
-  val connection = driver.connection(List("localhost"))
+  lazy val connection = driver.connection(List("localhost"))
   lazy val db = connection("reactive-example")(Main.system.dispatcher)
 
   // Json mapping to / from BSON - in this case we want "_id" from BSON to be 

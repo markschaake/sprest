@@ -37,17 +37,26 @@ trait DAO[M <: Model[ID], ID] {
 
   protected def allImpl(implicit ec: ExecutionContext): Future[Iterable[M]]
 
-  final def all(implicit ec: ExecutionContext): Future[Iterable[M]] = allImpl flatMap { ms =>
-    Future.traverse(ms)(postFetch)
-  }
+  final def all(implicit ec: ExecutionContext): Future[Iterable[M]] = fetchMany(allImpl)
 
   protected def findBySelector(selector: Selector)(implicit ec: ExecutionContext): Future[Option[M]]
 
-  def findById(id: ID)(implicit ec: ExecutionContext): Future[Option[M]] =
-    findBySelector(generateSelector(id)) flatMap {
-      case Some(m) => postFetch(m) map { Option(_) }
-      case None    => Future.successful(None)
-    }
+  def findById(id: ID)(implicit ec: ExecutionContext): Future[Option[M]] = fetchOne(findBySelector(generateSelector(id)))
+
+  /**
+   * Peforms post-fetch processing on returned result
+   */
+  protected def fetchOne(f: => Future[Option[M]])(implicit ec: ExecutionContext): Future[Option[M]] = f flatMap {
+    case Some(m) => postFetch(m) map { Option(_) }
+    case None    => Future.successful(None)
+  }
+
+  /**
+   * Peforms post-fetch processing on returned results
+   */
+  protected def fetchMany(f: => Future[Iterable[M]])(implicit ec: ExecutionContext): Future[Iterable[M]] = f flatMap { ms =>
+    Future.traverse(ms)(postFetch)
+  }
 
   protected def nextId: Option[ID] = None
 

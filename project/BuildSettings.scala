@@ -3,7 +3,7 @@ import Keys._
 
 object BuildSettings {
 
-  val VERSION = "0.2.0-SNAPSHOT"
+  val VERSION = "0.3.0-SNAPSHOT"
 
   def versionIsSnapshot = VERSION.endsWith("SNAPSHOT")
 
@@ -14,17 +14,17 @@ object BuildSettings {
       new File(Path.userHome.absolutePath + "/projects/markschaake.github.com/releases")
   }
 
-  lazy val noPublishing = seq(
-    publish := (),
-    publishLocal := ())
+  lazy val noPublishing = Seq(
+    publish := Nil,
+    publishLocal := Nil)
 
-  lazy val basicSettings = seq(
+  lazy val basicSettings = Seq(
     version := VERSION,
     organization := "sprest",
     description := "A suite of libraries leveraging Spray",
     startYear := Some(2013),
     licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
-    scalaVersion := "2.10.2",
+    scalaVersion := "2.10.3",
     resolvers ++= Dependencies.resolutionRepos,
     scalacOptions := Seq(
       "-encoding", "utf8",
@@ -39,7 +39,7 @@ object BuildSettings {
 
   lazy val sprestModuleSettings =
     basicSettings ++
-      seq(
+      Seq(
         version := VERSION,
         isSnapshot := versionIsSnapshot,
         publishTo := Some(Resolver.file("file", publishDir)))

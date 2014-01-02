@@ -11,7 +11,7 @@ object Main extends App
   with Routes
   with DB {
 
-  override implicit val system = ActorSystem("sprest-reactive-mongo")
+  override implicit val system = ActorSystem("sprest-slick")
 
   startServer(interface = "localhost", port = 8080) {
     routes
