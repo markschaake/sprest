@@ -26,16 +26,13 @@ object BuildSettings {
       "-language:postfixOps",
       "-language:implicitConversions",
       "-Xlog-reflective-calls",
-      "-Ywarn-adapted-args"))
+      "-Ywarn-adapted-args"),
+    publishTo := {
+      if (isSnapshot.value)
+        Some(Resolver.file("file", publishDir("snapshots")))
+      else
+        Some(Resolver.file("file", publishDir("releases")))
+    })
 
-  lazy val sprestModuleSettings =
-    basicSettings ++
-      Seq(
-        publishTo := {
-          if (isSnapshot.value)
-            Some(Resolver.file("file", publishDir("snapshots")))
-          else
-            Some(Resolver.file("file", publishDir("releases")))
-        }
-      )
+  lazy val sprestModuleSettings = basicSettings
 }
