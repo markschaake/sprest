@@ -1,14 +1,20 @@
 console.info "we have coffee!"
 window.myModule = angular.module "myModule", ["ngResource"]
-window.ToDos = ($scope, $resource) ->
+window.ToDos = ($scope, $resource, $http) ->
   ToDo = $resource('/api/todos/:id', id: '@id')
 
+  $http.get('/api/priorities').success (ps) ->
+    $scope.priorities = ps
+    
   $scope.todos = ToDo.query()
   $scope.addTodo = ->
-    toAdd = new ToDo({text: $scope.todoText, done: false})
+    toAdd = new ToDo({text: $scope.todoText, done: false, priority: $scope.todoPriority})
     toAdd.$save()
     $scope.todos.push toAdd
     $scope.todoText = null
+
+  $scope.priorityLabel = (pId) ->
+    (p for p in $scope.priorities when p.id is pId)[0]?.label
 
   $scope.updateTodo = (todo) -> todo.$save()
   $scope.removeTodo = (todo) ->

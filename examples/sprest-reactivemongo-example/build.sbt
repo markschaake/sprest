@@ -6,14 +6,14 @@ resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/service/local/rep
 
 resolvers += "Mark Schaake" at "http://markschaake.github.com/snapshots"
 
-scalaVersion := "2.10.2"
+scalaVersion := "2.10.3"
 
 name := "sprest-reactivemongo-example"
 
 scalacOptions += "-feature"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-actor" % "2.2.1",
+  "com.typesafe.akka" %% "akka-actor" % "2.2.3",
   "ch.qos.logback" % "logback-classic" % "1.0.1",
   "joda-time" % "joda-time" % "2.1",
   "org.joda" % "joda-convert" % "1.3",

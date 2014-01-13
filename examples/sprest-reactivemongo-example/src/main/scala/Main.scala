@@ -12,7 +12,7 @@ object Main extends App
 
   override implicit val system = ActorSystem("sprest-reactive-mongo")
 
-  startServer(interface = "localhost", port = 8080) {
+  startServer(interface = "localhost", port = 8081) {
     routes
   }
 }

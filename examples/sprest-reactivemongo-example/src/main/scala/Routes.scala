@@ -5,6 +5,7 @@ import sprest.routing.RestRoutes
 
 trait Routes extends RestRoutes { this: SimpleRoutingApp =>
   import spray.routing.Directives._
+  import spray.json.DefaultJsonProtocol._
   import spray.httpx.SprayJsonSupport._
   import spray.httpx.encoding.Gzip
   import spray.json._
@@ -36,8 +37,20 @@ trait Routes extends RestRoutes { this: SimpleRoutingApp =>
   def publicAssets = js ~ css ~ bootstrap
 
   def api = pathPrefix("api") {
-    dynamic(restString("todos", DB.ToDos) ~
-      restString("reminders", DB.Reminders))
+    path("priorities") {
+      get {
+        complete {
+          models.Priority.all.sortBy(_.value) map { p =>
+            JsObject(
+              "id" -> p.name.toJson,
+              "label" -> p.label.toJson,
+              "sort" -> p.value.toJson)
+          }
+        }
+      }
+    } ~
+      dynamic(restString("todos", DB.ToDos) ~
+        restString("reminders", DB.Reminders))
   }
 
   def routes = index ~ publicAssets ~ api

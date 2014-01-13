@@ -28,11 +28,14 @@
 				<ul class="unstyled">
 					<li ng-repeat="todo in todos">
 						<input type="checkbox" ng-model="todo.done" ng-change="updateTodo(todo)">
-						<span class="done-{{todo.done}}">{{todo.text}}</span><a href="#" ng-click="removeTodo(todo)">[x]</a>
+						<span class="done-{{todo.done}}">{{todo.text}}</span>
+						<span class="todo-priority label">{{priorityLabel(todo.priority)}}</span>
+						<a href="#" ng-click="removeTodo(todo)">[x]</a>
 					</li>
 				</ul>
 				<form ng-submit="addTodo()" class="form-inline">
 					<input type="text" ng-model="todoText" placeholder="add todo">
+					<select ng-model="todoPriority" ng-options="p.id as p.label for p in priorities"></select>
 					<input class="btn btn-primary" type="submit" value="add">
 				</form>
 			</div>
