@@ -18,4 +18,4 @@ This example application illustrates the following funtionality:
 
 `sbt run`
 
-Then navigate to http://localhost:8080 and use the app.
+Then navigate to http://localhost:8081 and use the app.

@@ -4,6 +4,7 @@ This example application illustrates the following funtionality:
 
 * Connect to MongoDB in a reactive way (using ReactiveMongo behind the scenes)
 * Generate REST CRUD routes off of DAOs
+* Use of sprest.util.enum.Enum for To Do priorities
 * Integrate Coffeescript and Less CSS compilers
 * AngularJS based frontend
 
@@ -16,4 +17,4 @@ This example application illustrates the following funtionality:
 
 `sbt run`
 
-Then navigate to http://localhost:8080 and use the app.
+Then navigate to http://localhost:8081 and use the app.
