@@ -1,25 +1,16 @@
 import sbt._
 import Keys._
+import sbtrelease.ReleasePlugin._
 
 object BuildSettings {
 
-  val VERSION = "0.3.0"
-
-  def versionIsSnapshot = VERSION.endsWith("SNAPSHOT")
-
-  def publishDir = {
-    if (versionIsSnapshot)
-      new File(Path.userHome.absolutePath + "/projects/markschaake.github.com/snapshots")
-    else
-      new File(Path.userHome.absolutePath + "/projects/markschaake.github.com/releases")
-  }
+  def publishDir(subDir: String) = new File(Path.userHome.absolutePath + s"/projects/markschaake.github.com/$subDir")
 
   lazy val noPublishing = Seq(
     publish := Nil,
     publishLocal := Nil)
 
-  lazy val basicSettings = Seq(
-    version := VERSION,
+  lazy val basicSettings = releaseSettings ++ Seq(
     organization := "sprest",
     description := "A suite of libraries leveraging Spray",
     startYear := Some(2013),
@@ -40,7 +31,11 @@ object BuildSettings {
   lazy val sprestModuleSettings =
     basicSettings ++
       Seq(
-        version := VERSION,
-        isSnapshot := versionIsSnapshot,
-        publishTo := Some(Resolver.file("file", publishDir)))
+        publishTo := {
+          if (isSnapshot.value)
+            Some(Resolver.file("file", publishDir("snapshots")))
+          else
+            Some(Resolver.file("file", publishDir("releases")))
+        }
+      )
 }
