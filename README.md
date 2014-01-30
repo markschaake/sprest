@@ -27,8 +27,8 @@ Sprest is published to a GitHub-based repository. To use it, add the following r
 
 Then you can include sprest libraries:
 
-    libraryDependencies += "sprest" %% "sprest-core" % "0.3.0"
-	libraryDependencies += "sprest" %% "sprest-slick" % "0.3.0"
-	libraryDependencies += "sprest" %% "sprest-reactivemongo" % "0.3.0"
+    libraryDependencies += "sprest" %% "sprest-core" % "0.3.1"
+	libraryDependencies += "sprest" %% "sprest-slick" % "0.3.1"
+	libraryDependencies += "sprest" %% "sprest-reactivemongo" % "0.3.1"
 
 Note: it is unnecessary to explicitly declare the "sprest-core" dependency if you declare a dependency on a library that depends upon the core (such as sprest-slick or sprest-reactivemongo).
