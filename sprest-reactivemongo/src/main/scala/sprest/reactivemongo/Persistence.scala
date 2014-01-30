@@ -35,7 +35,7 @@ object Sort {
 
 trait ReactiveMongoPersistence {
 
-  abstract class CollectionDAO[M <: Model[ID], ID](collection: BSONCollection)(implicit jsonFormat: RootJsonFormat[M], jsonMapper: SprayJsonTypeMapper, idMapper: BSONTypeMapper[ID])
+  abstract class CollectionDAO[M <: Model[ID], ID](protected val collection: BSONCollection)(implicit jsonFormat: RootJsonFormat[M], jsonMapper: SprayJsonTypeMapper, idMapper: BSONTypeMapper[ID])
     extends DAO[M, ID] with BsonProtocol with Logging {
 
     override val loggerName = "Sprest-ReactiveMongo"
