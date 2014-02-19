@@ -3,6 +3,7 @@ package sprest.reactivemongo
 import reactivemongo.api.collections.default.BSONCollection
 import reactivemongo.core.commands.Command
 import reactivemongo.core.commands.Count
+import reactivemongo.core.commands.LastError
 import sprest.Implicits._
 import sprest.Logging
 import sprest.models._
@@ -35,8 +36,12 @@ object Sort {
 
 trait ReactiveMongoPersistence {
 
-  abstract class CollectionDAO[M <: Model[ID], ID](protected val collection: BSONCollection)(implicit jsonFormat: RootJsonFormat[M], jsonMapper: SprayJsonTypeMapper, idMapper: BSONTypeMapper[ID])
-    extends DAO[M, ID] with BsonProtocol with Logging {
+  abstract class CollectionDAO[M <: Model[ID], ID : JsonFormat]
+    (protected val collection: BSONCollection)
+    (implicit jsonFormat: RootJsonFormat[M],
+      jsonMapper: SprayJsonTypeMapper,
+      idMapper: BSONTypeMapper[ID])
+      extends DAO[M, ID] with BsonProtocol with Logging {
 
     override val loggerName = "Sprest-ReactiveMongo"
 
@@ -46,7 +51,8 @@ trait ReactiveMongoPersistence {
     private val emptyQuery = BSONDocument()
 
     /* ===========> DAO interface <============ */
-    override protected def allImpl(implicit ec: ExecutionContext) = collection.find(emptyQuery).cursor[M].collect[List]()
+    override protected def allImpl(implicit ec: ExecutionContext) =
+      collection.find(emptyQuery).cursor[M].collect[List]()
 
     override def findBySelector(selector: Selector)(implicit ec: ExecutionContext) =
       Logger.debugTimedAsync(s"Fetching by selector $selector", logResult = true) {
@@ -63,31 +69,34 @@ trait ReactiveMongoPersistence {
       collection.find(obj)
 
     /**
-     * Returns the query result as a [[reactivemongo.api.Cursor]] object
-     *
-     * @param obj the query object that can be converted into a BSONDocument
-     * @param writer implicit BSONDocumentWriter for T
-     * @param ec implicit ExecutionContext
-     */
-    def findCursor[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Cursor[M] = queryBuilder(obj).cursor[M]
+      * Returns the query result as a [[reactivemongo.api.Cursor]] object
+      *
+      * @param obj the query object that can be converted into a BSONDocument
+      * @param writer implicit BSONDocumentWriter for T
+      * @param ec implicit ExecutionContext
+      */
+    def findCursor[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Cursor[M] =
+      queryBuilder(obj).cursor[M]
 
     def find[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = fetchMany {
       findCursor(obj).collect[Iterable]()
     }.map(_.toList)
 
-    def find[T](obj: T, sort: Sort)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = fetchMany {
-      // generate the sort BSONDocument
-      val sortDoc = BSONDocument.empty.add(Sort.bsonWriter.write(sort))
-      queryBuilder(obj).sort(sortDoc).cursor[M].collect[Iterable]()
-    }.map(_.toList)
+    def find[T](obj: T, sort: Sort)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] =
+      fetchMany {
+        // generate the sort BSONDocument
+        val sortDoc = BSONDocument.empty.add(Sort.bsonWriter.write(sort))
+        queryBuilder(obj).sort(sortDoc).cursor[M].collect[Iterable]()
+      }.map(_.toList)
 
-    def find[T](obj: T, sorts: List[Sort])(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = fetchMany {
+    def find[T](obj: T, sorts: List[Sort])
+      (implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = fetchMany {
       // generate the sort BSONDocument
       val sortDoc = sorts.foldLeft(BSONDocument.empty) { (doc, sort) =>
         doc.add(Sort.bsonWriter.write(sort))
       }
       queryBuilder(obj).sort(sortDoc).cursor[M].collect[Iterable]()
-    }.map(_.toList)
+    } map { _.toList }
 
     def findOne[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[Option[M]] = fetchOne {
       findCursor(obj).headOption
@@ -97,8 +106,8 @@ trait ReactiveMongoPersistence {
       collection.find(selector, projection).cursor[P]
 
     /**
-     * Projects the query into an object of type P
-     */
+      * Projects the query into an object of type P
+      */
     def findAs[P](selector: JsObject, projection: JsObject)(implicit reads: RootJsonReader[P], ec: ExecutionContext) =
       findAsCursor[P](selector, projection).collect[List]()
 
@@ -115,7 +124,53 @@ trait ReactiveMongoPersistence {
 
     protected def checkedRemoveById(id: ID)(implicit ec: ExecutionContext) = collection.remove(findByIdQuery(id))
 
-    /** Inserts the model */
+    /** Deletes all models that match the query
+      * @param query
+      */
+    def deleteWhere(query: JsObject)(implicit ec: ExecutionContext): Future[LastError] = collection.remove(query)
+
+    /** Updates all models that match the `query` with the new values in `fields`
+      * @param query   mongodb query object
+      * @param fields  fields to update with new values (or to remove)
+      */
+    def updateWhere(query: JsObject, fields: JsObject)(implicit ec: ExecutionContext): Future[LastError] =
+      collection.update(query, JsObject("$set" -> fields), multi = true)
+
+    /** Updates the fields of the model with the corresponding `id`
+      * @param id
+      * @param fields map of field names to new values for update
+      */
+    def updateById(id: ID, fields: JsObject)(implicit ec: ExecutionContext): Future[M] = {
+      collection.update(JsObject("_id" -> id.toJson), JsObject("$set" -> fields)) flatMap { lastError =>
+        if (lastError.inError)
+          Future.failed(lastError.getCause)
+        else
+          findById(id) flatMap {
+            case Some(found) => Future.successful(found)
+            case None        => Future.failed(new Exception(s"Could not re-find entity with id $id"))
+          }
+      }
+    }
+
+    /** Updates the fields of the model with the corresponding `id`
+      * @param id
+      * @param fields
+      */
+    def updateById(id: ID, fields: BSONDocument)(implicit ec: ExecutionContext): Future[M] = {
+      collection.update(JsObject("_id" -> id.toJson), fields) flatMap { lastError =>
+        if (lastError.inError)
+          Future.failed(lastError.getCause)
+        else
+          findById(id) flatMap {
+            case Some(found) => Future.successful(found)
+            case None        => Future.failed(new Exception(s"Could not re-find entity with id $id"))
+          }
+      }
+    }
+
+    /** Inserts the model
+      * @param m
+      */
     protected def doAdd(m: M)(implicit ec: ExecutionContext): Future[M] = m.id match {
       case Some(id) =>
         collection.insert(m) flatMap { lastError =>
@@ -142,13 +197,12 @@ trait ReactiveMongoPersistence {
           update = m,
           upsert = true,
           multi = false) flatMap { lastError =>
-            if (lastError.ok)
-              Future.successful(m)
-            else
-              Future.failed(lastError.getCause())
-          }
+          if (lastError.ok)
+            Future.successful(m)
+          else
+            Future.failed(lastError.getCause())
+        }
       case None => throw new Exception("id required for update")
     }
   }
 }
-

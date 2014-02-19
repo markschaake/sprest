@@ -8,6 +8,7 @@ import reactivemongo.core.commands.LastError
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import spray.json._
+import spray.json.DefaultJsonProtocol._
 import sprest.models.Model
 import sprest.models.ModelCompanion
 import sprest.models.UniqueSelector
@@ -111,7 +112,6 @@ class PersistenceSpec extends Specification {
       queryResult(1).age must_== 2
       queryResult(1).name must_== "FooZ"
       queryResult(2).age must_== 1
-      
     }
   }
 
@@ -195,6 +195,46 @@ class PersistenceSpec extends Specification {
 
       val count = blockForResult(fooDao.count(JsObject("age" -> 3.toJson)))
       count must_== 2
+    }
+  }
+
+  "updateWhere" should {
+    "update all models that match the query" in new MongoScope {
+      val fooDao= new FooDAO("updateWhere")
+      val added1 = blockForResult(fooDao.add(Foo(name = "Foo1", age = 1)))
+      val added2 = blockForResult(fooDao.add(Foo(name = "Foo2", age = 3)))
+      val added3 = blockForResult(fooDao.add(Foo(name = "Foo3", age = 3)))
+      val query = JsObject("age" -> 3.toJson)
+      val fields = JsObject("age" -> 4.toJson)
+      val lastError = blockForResult(fooDao.updateWhere(query, fields))
+      lastError.inError must_== false
+      blockForResult(fooDao.find(query)) must have size 0
+      blockForResult(fooDao.find(JsObject("age" -> 4.toJson))) must have size 2
+    }
+  }
+
+  "updateById" should {
+    "update fields specified" in new MongoScope {
+      val fooDao= new FooDAO("updateById")
+      val added = blockForResult(fooDao.add(Foo(name = "Foo1", age = 1)))
+      val fields = JsObject("age" -> 2.toJson)
+      val updated = blockForResult(fooDao.updateById(added.id.get, fields))
+      val retrieved = blockForResult(fooDao.findById(updated.id.get)).get
+      retrieved.age must_== 2
+    }
+  }
+
+  "deleteWhere" should {
+    "delete all models that match the query" in new MongoScope {
+      val fooDao= new FooDAO("deleteWhere")
+      val added1 = blockForResult(fooDao.add(Foo(name = "Foo1", age = 1)))
+      val added2 = blockForResult(fooDao.add(Foo(name = "Foo2", age = 3)))
+      val added3 = blockForResult(fooDao.add(Foo(name = "Foo3", age = 3)))
+      val query = JsObject("age" -> 3.toJson)
+      val lastError = blockForResult(fooDao.deleteWhere(query))
+      lastError.inError must_== false
+      blockForResult(fooDao.count(query)) must_== 0
+      blockForResult(fooDao.count(JsObject("age" -> 1.toJson))) must_== 1
     }
   }
 
