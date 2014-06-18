@@ -1,23 +1,26 @@
 package sprest.reactivemongo
 
-import org.specs2.mutable._
-import org.specs2.specification.Scope
-import reactivemongo.bson.BSONDocument
-import reactivemongo.bson.BSONDocumentWriter
-import reactivemongo.core.commands.LastError
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 import sprest.models.Model
 import sprest.models.ModelCompanion
 import sprest.models.UniqueSelector
 import sprest.reactivemongo.typemappers.SprayJsonTypeMapper
-import scala.concurrent.ExecutionContext.Implicits.global
+
+import org.specs2.mutable._
+import org.specs2.specification.Scope
 import reactivemongo.api._
-import typemappers._
+import reactivemongo.bson.BSONDocument
+import reactivemongo.bson.BSONDocumentWriter
+import reactivemongo.core.commands.LastError
+import spray.json.DefaultJsonProtocol._
+import spray.json._
+
 import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.concurrent.duration._
+
+import typemappers._
 
 class PersistenceSpec extends Specification {
 
