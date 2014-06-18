@@ -15,20 +15,20 @@ object Dependencies {
   def runtime(deps: ModuleID*): Seq[ModuleID] = deps map (_ % "runtime")
   def container(deps: ModuleID*): Seq[ModuleID] = deps map (_ % "container")
 
-  val sprayVersion = "1.2.0"
+  val sprayVersion = "1.3.1"
   def sprayModule(id: String) = "io.spray" % id % sprayVersion
 
-  val akkaVersion = "2.2.3"
+  val akkaVersion = "2.3.3"
   def akkaModule(id: String) = "com.typesafe.akka" %% id % akkaVersion
 
   val sprayCan = sprayModule("spray-can")
   val sprayRouting = sprayModule("spray-routing")
   val sprayTestKit = sprayModule("spray-testkit")
-  val sprayJson = "io.spray" %% "spray-json" % "1.2.5"
-  val logback = "ch.qos.logback" % "logback-classic" % "1.0.7"
+  val sprayJson = "io.spray" %% "spray-json" % "1.2.6"
+  val logback = "ch.qos.logback" % "logback-classic" % "1.1.2"
   val joda = "joda-time" % "joda-time" % "2.3"
-  val jodaConvert = "org.joda" % "joda-convert" % "1.5"
-  val specs2 = "org.specs2" %% "specs2" % "2.2"
+  val jodaConvert = "org.joda" % "joda-convert" % "1.6"
+  val specs2 = "org.specs2" %% "specs2" % "2.3.10"
   val akkaActor = akkaModule("akka-actor")
   val akkaTestKit = akkaModule("akka-testkit")
   val slick = "com.typesafe.slick" %% "slick" % "1.0.1"

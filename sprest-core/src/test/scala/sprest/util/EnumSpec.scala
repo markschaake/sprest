@@ -23,7 +23,7 @@ class EnumSpec extends Specification {
           val js = industry.toJson
           js.convertTo[FakeEnum] must_== industry
         }
-      results.toList
+      results.toSeq
     }
 
     "fetch by name" in {
