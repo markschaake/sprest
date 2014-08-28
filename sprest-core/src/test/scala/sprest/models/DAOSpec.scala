@@ -26,13 +26,13 @@ class DAOSpec extends Specification {
       val values = all.value.get.get
       values must have size 3
       values map { value =>
-        value.foo must_== Some(value.id.get + " ok")
+        value.foo must_== Some(value.id + " ok")
       }
     }
 
     "perform postFetch on add" in new DAOContext {
       val m = IntModel(
-        id = None,
+        id = intDAO.nextId,
         name = "hi",
         userId = "first")
       val addedFuture = intDAO.add(m)
@@ -43,7 +43,7 @@ class DAOSpec extends Specification {
 
     "perform postFetch on update" in new DAOContext {
       val m = IntModel(
-        id = None,
+        id = intDAO.nextId,
         name = "hi",
         userId = "first")
 
@@ -67,7 +67,7 @@ class DAOSpec extends Specification {
     type ID = String
   }
 
-  case class IntModel(var id: Option[Int], name: String, userId: String) extends Model[Int] {
+  case class IntModel(id: Int, name: String, userId: String) extends Model[Int] {
     var foo: Option[String] = None
     override def toString = {
       s"foo: $foo"
@@ -75,20 +75,26 @@ class DAOSpec extends Specification {
   }
 
   class IntDAO extends DAO[IntModel, Int]
-    with MutableListDAO[IntModel, Int]
-    with IntId {
+      with MutableListDAO[IntModel, Int] {
+
+    private var prevId: Int = 0
+
+    def nextId: Int = synchronized {
+      prevId += 1
+      prevId
+    }
 
     override protected def postFetch(m: IntModel)(implicit ec: ExecutionContext) = {
-      m.foo = Some(m.id.get + " ok")
+      m.foo = Some(m.id + " ok")
       Future.successful(m)
     }
   }
 
   trait DAOContext extends Scope {
     val intDAO = new IntDAO
-    intDAO.add(IntModel(None, "first", "first"))
-    intDAO.add(IntModel(None, "second", "second"))
-    intDAO.add(IntModel(None, "anotherfirst", "first"))
+    intDAO.add(IntModel(intDAO.nextId, "first", "first"))
+    intDAO.add(IntModel(intDAO.nextId, "second", "second"))
+    intDAO.add(IntModel(intDAO.nextId, "anotherfirst", "first"))
   }
 
 }

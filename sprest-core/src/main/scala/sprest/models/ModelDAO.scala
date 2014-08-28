@@ -43,22 +43,18 @@ trait DAO[M <: Model[ID], ID] {
 
   def findById(id: ID)(implicit ec: ExecutionContext): Future[Option[M]] = fetchOne(findBySelector(generateSelector(id)))
 
-  /**
-   * Peforms post-fetch processing on returned result
-   */
+  /** Peforms post-fetch processing on returned result
+    */
   protected def fetchOne(f: => Future[Option[M]])(implicit ec: ExecutionContext): Future[Option[M]] = f flatMap {
     case Some(m) => postFetch(m) map { Option(_) }
-    case None    => Future.successful(None)
+    case None => Future.successful(None)
   }
 
-  /**
-   * Peforms post-fetch processing on returned results
-   */
+  /** Peforms post-fetch processing on returned results
+    */
   protected def fetchMany(f: => Future[Iterable[M]])(implicit ec: ExecutionContext): Future[Iterable[M]] = f flatMap { ms =>
     Future.traverse(ms)(postFetch)
   }
-
-  protected def nextId: Option[ID] = None
 
   protected def addImpl(m: M)(implicit ec: ExecutionContext): Future[M]
   protected def updateImpl(m: M)(implicit ec: ExecutionContext): Future[M]
@@ -79,11 +75,9 @@ trait MutableListDAO[M <: Model[ID], ID] extends DAO[M, ID] {
 
   protected val _all = scala.collection.mutable.ListBuffer[M]()
 
-  override protected def allImpl(implicit ec: ExecutionContext) = Future.successful { _all.toIterable }
+  override protected def allImpl(implicit ec: ExecutionContext) = Future.successful(_all.toIterable)
 
   override protected def addImpl(m: M)(implicit ec: ExecutionContext) = Future.successful {
-    if (m.id.isEmpty)
-      m.id = nextId
     _all += m
     m
   }
@@ -93,21 +87,17 @@ trait MutableListDAO[M <: Model[ID], ID] extends DAO[M, ID] {
   override def remove(selector: Selector)(implicit ec: ExecutionContext) {
     findBySelector(selector).onSuccess {
       case Some(found) => _all -= found
-      case None        => // do nothing
+      case None => // do nothing
     }
   }
 
   override protected def updateImpl(m: M)(implicit ec: ExecutionContext) = Future.successful {
-    m.id match {
-      case Some(id) =>
-        removeById(id)
-        _all += m
-        m
-      case None => throw new Exception("ID required for update")
-    }
+    removeById(m.id)
+    _all += m
+    m
   }
 
   override def findBySelector(selector: Selector)(implicit ec: ExecutionContext) = Future.successful {
-    _all.find(_.id.get == selector.id)
+    _all.find(_.id == selector.id)
   }
 }

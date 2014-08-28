@@ -171,38 +171,25 @@ trait ReactiveMongoPersistence {
     /** Inserts the model
       * @param m
       */
-    protected def doAdd(m: M)(implicit ec: ExecutionContext): Future[M] = m.id match {
-      case Some(id) =>
-        collection.insert(m) flatMap { lastError =>
-          if (lastError.ok)
-            Future.successful(m)
-          else
-            Future.failed(lastError.getCause())
-        }
-      case None =>
-        m.id = nextId
-        collection.insert(m) flatMap { lastError =>
-          if (lastError.ok)
-            Future.successful(m)
-          else
-            Future.failed(lastError.getCause())
-        }
-    }
+    protected def doAdd(m: M)(implicit ec: ExecutionContext): Future[M] =
+      collection.insert(m) flatMap { lastError =>
+        if (lastError.ok)
+          Future.successful(m)
+        else
+          Future.failed(lastError.getCause())
+      }
 
     /** Updates the model without checks */
-    protected def doUpdate(m: M)(implicit ec: ExecutionContext): Future[M] = m.id match {
-      case Some(id) =>
-        collection.update(
-          selector = findByIdQuery(id),
-          update = m,
-          upsert = true,
-          multi = false) flatMap { lastError =>
-          if (lastError.ok)
-            Future.successful(m)
-          else
-            Future.failed(lastError.getCause())
-        }
-      case None => throw new Exception("id required for update")
+    protected def doUpdate(m: M)(implicit ec: ExecutionContext): Future[M] =
+      collection.update(
+        selector = findByIdQuery(m.id),
+        update = m,
+        upsert = true,
+        multi = false) flatMap { lastError =>
+        if (lastError.ok)
+          Future.successful(m)
+        else
+          Future.failed(lastError.getCause())
     }
   }
 }

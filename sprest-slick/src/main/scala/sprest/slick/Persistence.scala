@@ -38,7 +38,7 @@ trait SlickPersistence {
     override def remove(selector: Selector)(implicit ec: ExecutionContext) = withSession { implicit s => table.byId(selector.id).mutate(_.delete) }
 
     override protected def updateImpl(m: M)(implicit ec: ExecutionContext) = futureWithSession { implicit s =>
-      table.byId(m.id.get).mutate(_.row = m)
+      table.byId(m.id).mutate(_.row = m)
       m
     }
 
