@@ -14,24 +14,29 @@ import scala.concurrent.Future
 import sprest.security._
 
 class RestSpec extends Specification
-  with Specs2RouteTest
-  with HttpService
-  with RestRoutes
-  with spray.httpx.SprayJsonSupport
-  with DefaultJsonProtocol {
+    with Specs2RouteTest
+    with HttpService
+    with RestRoutes
+    with spray.httpx.SprayJsonSupport
+    with DefaultJsonProtocol {
 
   def actorRefFactory = system
 
-  case class IntModel(var id: Option[Int], name: String, userId: String) extends Model[Int]
+  case class IntModel(id: Int, name: String, userId: String) extends Model[Int]
 
   implicit val IntModelFormat = jsonFormat(IntModel, "id", "name", "userId")
 
   class IntDAO extends DAO[IntModel, Int]
-    with MutableListDAO[IntModel, Int]
-    with IntId {
+      with MutableListDAO[IntModel, Int] {
+
+    private var prevId: Int = 0
+
+    def nextId: Int = synchronized {
+      prevId += 1
+      prevId
+    }
 
     override protected def addImpl(m: IntModel)(implicit ec: ExecutionContext) = Future.successful {
-      m.id = nextId
       _all += m
       m
     }
@@ -47,9 +52,9 @@ class RestSpec extends Specification
     }
 
     "POST adds" in new RoutesContext {
-      Post("/ints", IntModel(None, "third", "first")) ~> intRoutes ~> check {
+      Post("/ints", IntModel(intDAO.nextId, "third", "first")) ~> intRoutes ~> check {
         val model = responseAs[IntModel]
-        model.id must_== Some(4)
+        model.id must_== 4
         model.name must_== "third"
       }
     }
@@ -68,7 +73,7 @@ class RestSpec extends Specification
     }
 
     "PUT by id updates model" in new RoutesContext {
-      Put("/ints/2", IntModel(Some(2), "2nd", "2nd")) ~> intRoutes ~> check {
+      Put("/ints/2", IntModel(2, "2nd", "2nd")) ~> intRoutes ~> check {
         responseAs[IntModel].name must_== "2nd"
       }
     }
@@ -90,8 +95,8 @@ class RestSpec extends Specification
     val intDAO = new IntDAO
     val intRoutes = restInt("ints", intDAO)
 
-    intDAO.add(IntModel(None, "first", "first"))
-    intDAO.add(IntModel(None, "second", "second"))
-    intDAO.add(IntModel(None, "anotherfirst", "first"))
+    intDAO.add(IntModel(intDAO.nextId, "first", "first"))
+    intDAO.add(IntModel(intDAO.nextId, "second", "second"))
+    intDAO.add(IntModel(intDAO.nextId, "anotherfirst", "first"))
   }
 }
