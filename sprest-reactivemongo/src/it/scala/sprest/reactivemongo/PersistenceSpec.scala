@@ -203,6 +203,23 @@ class PersistenceSpec extends Specification {
     }
   }
 
+  "insertRaw" should {
+    "insert raw JSON while respecting SprayJsonTypeMapper" in new MongoScope {
+      val raw = JsObject(
+        "id" -> "123".toJson,
+        "fullname" -> "foobar".toJson)
+
+      val fooDao = new FooDAO("insertRaw")
+      blockForResult(fooDao.insertRaw(raw))
+      val query = JsObject("fullname" -> "foobar".toJson)
+      val fields = JsObject("name" -> "foobar".toJson,"age" -> 4.toJson)
+      blockForResult(fooDao.updateWhere(query, fields))
+      val updated = blockForResult(fooDao.findById("123")).get
+      updated.name must_== "foobar"
+      updated.age must_== 4
+    }
+  }
+
   "updateWhere" should {
     "update all models that match the query" in new MongoScope {
       val fooDao = new FooDAO("updateWhere")
