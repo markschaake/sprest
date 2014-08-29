@@ -36,16 +36,14 @@ object Sort {
 
 trait ReactiveMongoPersistence {
 
-  abstract class CollectionDAO[M <: Model[ID], ID : JsonFormat]
-    (protected val collection: BSONCollection)
-    (implicit jsonFormat: RootJsonFormat[M],
-      jsonMapper: SprayJsonTypeMapper,
-      idMapper: BSONTypeMapper[ID])
+  abstract class CollectionDAO[M <: Model[ID], ID: JsonFormat](protected val collection: BSONCollection)(implicit jsonFormat: RootJsonFormat[M],
+    jsonMapper: SprayJsonTypeMapper,
+    idMapper: BSONTypeMapper[ID])
       extends DAO[M, ID] with BsonProtocol with Logging {
 
     override val loggerName = "Sprest-ReactiveMongo"
 
-    implicit val bsonFormat = generateBSONFormat[M]
+    implicit val bsonFormat: BSONFormat[M] = generateBSONFormat[M]
 
     private def findByIdQuery(id: ID) = BSONDocument("_id" -> idMapper.toBSON(id))
     private val emptyQuery = BSONDocument()
@@ -68,8 +66,7 @@ trait ReactiveMongoPersistence {
     def queryBuilder[T](obj: T)(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext) =
       collection.find(obj)
 
-    /**
-      * Returns the query result as a [[reactivemongo.api.Cursor]] object
+    /** Returns the query result as a [[reactivemongo.api.Cursor]] object
       *
       * @param obj the query object that can be converted into a BSONDocument
       * @param writer implicit BSONDocumentWriter for T
@@ -89,8 +86,7 @@ trait ReactiveMongoPersistence {
         queryBuilder(obj).sort(sortDoc).cursor[M].collect[Iterable]()
       }.map(_.toList)
 
-    def find[T](obj: T, sorts: List[Sort])
-      (implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = fetchMany {
+    def find[T](obj: T, sorts: List[Sort])(implicit writer: BSONDocumentWriter[T], ec: ExecutionContext): Future[List[M]] = fetchMany {
       // generate the sort BSONDocument
       val sortDoc = sorts.foldLeft(BSONDocument.empty) { (doc, sort) =>
         doc.add(Sort.bsonWriter.write(sort))
@@ -105,8 +101,7 @@ trait ReactiveMongoPersistence {
     def findAsCursor[P](selector: JsObject, projection: JsObject)(implicit reads: RootJsonReader[P], ec: ExecutionContext) =
       collection.find(selector, projection).cursor[P]
 
-    /**
-      * Projects the query into an object of type P
+    /** Projects the query into an object of type P
       */
     def findAs[P](selector: JsObject, projection: JsObject)(implicit reads: RootJsonReader[P], ec: ExecutionContext) =
       findAsCursor[P](selector, projection).collect[List]()
@@ -129,6 +124,14 @@ trait ReactiveMongoPersistence {
       */
     def deleteWhere(query: JsObject)(implicit ec: ExecutionContext): Future[LastError] = collection.remove(query)
 
+    /** Insert the raw JSON into the collection.
+      * Useful for intermediate migrations where you can't deserialize into
+      * a model object because the underlying JSON has not yet been fully
+      * migrated (fields added / changed / removed)
+      */
+    def insertRaw(obj: JsObject)(implicit ec: ExecutionContext): Future[LastError] =
+      collection.insert(jsonMapper.toBSON(obj).asInstanceOf[BSONDocument])
+
     /** Updates all models that match the `query` with the new values in `fields`
       * @param query   mongodb query object
       * @param fields  fields to update with new values (or to remove)
@@ -147,7 +150,7 @@ trait ReactiveMongoPersistence {
         else
           findById(id) flatMap {
             case Some(found) => Future.successful(found)
-            case None        => Future.failed(new Exception(s"Could not re-find entity with id $id"))
+            case None => Future.failed(new Exception(s"Could not re-find entity with id $id"))
           }
       }
     }
@@ -163,7 +166,7 @@ trait ReactiveMongoPersistence {
         else
           findById(id) flatMap {
             case Some(found) => Future.successful(found)
-            case None        => Future.failed(new Exception(s"Could not re-find entity with id $id"))
+            case None => Future.failed(new Exception(s"Could not re-find entity with id $id"))
           }
       }
     }
@@ -186,10 +189,10 @@ trait ReactiveMongoPersistence {
         update = m,
         upsert = true,
         multi = false) flatMap { lastError =>
-        if (lastError.ok)
-          Future.successful(m)
-        else
-          Future.failed(lastError.getCause())
-    }
+          if (lastError.ok)
+            Future.successful(m)
+          else
+            Future.failed(lastError.getCause())
+        }
   }
 }
