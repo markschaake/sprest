@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>sprest</groupId>
+    <artifactId>sprest-macros_2.10</artifactId>
+    <packaging>jar</packaging>
+    <description>A suite of libraries leveraging Spray</description>
+    <version>0.2.0</version>
+    <licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <name>sprest-macros</name>
+    <inceptionYear>2013</inceptionYear>
+    <organization>
+        <name>sprest</name>
+    </organization>
+    <dependencies>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.10.2</version>
+        </dependency>
+        <dependency>
+            <groupId>sprest</groupId>
+            <artifactId>sprest-core_2.10</artifactId>
+            <version>0.2.0</version>
+        </dependency>
+    </dependencies>
+    <repositories>
+        <repository>
+            <id>sprayrepo</id>
+            <name>spray repo</name>
+            <url>http://repo.spray.io/</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>MarkSchaake</id>
+            <name>Mark Schaake</name>
+            <url>http://markschaake.github.com/snapshots/</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>Typesafereleases</id>
+            <name>Typesafe releases</name>
+            <url>http://repo.typesafe.com/typesafe/releases/</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>MarkSchaake</id>
+            <name>Mark Schaake</name>
+            <url>http://markschaake.github.com/snapshots/</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
+</project>
