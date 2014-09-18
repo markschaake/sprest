@@ -4,7 +4,7 @@ resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/release
 
 resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/service/local/repositories/snapshots/content"
 
-resolvers += "Mark Schaake Releases" at "http://markschaake.github.io/snapshots"
+resolvers += "Sprest Snapshots" at "http://sprest.io/snapshots"
 
 scalaVersion := "2.10.4"
 

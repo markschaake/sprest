@@ -2,7 +2,7 @@ resolvers += "spray repo" at "http://repo.spray.io"
 
 resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
 
-resolvers += "Mark Schaake Releases" at "http://markschaake.github.com/releases"
+resolvers += "Sprest Releases" at "http://sprest.io/releases"
 
 scalaVersion := "2.10.3"
 

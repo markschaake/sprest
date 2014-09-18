@@ -23,7 +23,7 @@ Provides [ReactiveMongo](http://reactivemongo.org/) DAO implementation.
 ## SBT ##
 Sprest is published to a GitHub-based repository. To use it, add the following resolver:
 
-    resolvers += "sprest snapshots" at "http://markschaake.github.io/snapshots"
+    resolvers += "sprest snapshots" at "http://sprest.io/snapshots"
 
 Then you can include sprest libraries:
 
