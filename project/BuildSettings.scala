@@ -4,7 +4,7 @@ import sbtrelease.ReleasePlugin._
 
 object BuildSettings {
 
-  def publishDir(subDir: String) = new File(Path.userHome.absolutePath + s"/projects/markschaake.github.com/$subDir")
+  def publishDir(subDir: String) = new File(Path.userHome.absolutePath + s"/projects/sprest-hg-pages/$subDir")
 
   lazy val noPublishing = Seq(
     publish := Nil,
@@ -16,6 +16,7 @@ object BuildSettings {
     startYear := Some(2013),
     licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     scalaVersion := "2.10.4",
+    crossScalaVersions := Seq("2.10.4", "2.11.2"),
     resolvers ++= Dependencies.resolutionRepos,
     scalacOptions := Seq(
       "-encoding", "utf8",
