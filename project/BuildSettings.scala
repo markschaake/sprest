@@ -4,7 +4,7 @@ import sbtrelease.ReleasePlugin._
 
 object BuildSettings {
 
-  def publishDir(subDir: String) = new File(Path.userHome.absolutePath + s"/projects/sprest-hg-pages/$subDir")
+  def publishDir(subDir: String) = new File(Path.userHome.absolutePath + s"/projects/sprest-gh-pages/$subDir")
 
   lazy val noPublishing = Seq(
     publish := Nil,
