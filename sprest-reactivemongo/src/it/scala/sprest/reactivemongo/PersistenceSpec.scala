@@ -45,6 +45,11 @@ class PersistenceSpec extends Specification {
       implicit val jsFormat = jsonFormat3(Foo.apply _)
     }
 
+    case class FooYears(id: String, name: String, years: Int) extends Model[String]
+    object FooYears extends ModelCompanion[FooYears, String] {
+      implicit val jsFormat = jsonFormat3(FooYears.apply _)
+    }
+
     case class Bar(id: String, fullname: String, spec: Double) extends Model[String]
     object Bar extends ModelCompanion[Bar, String] {
       implicit val jsFormat = jsonFormat3(Bar.apply _)
@@ -77,6 +82,7 @@ class PersistenceSpec extends Specification {
     }
 
     class FooDAO(collName: String) extends BasicDAO[Foo](collName)
+    class FooYearsDAO(collName: String) extends BasicDAO[FooYears](collName)
     class BarDAO(collName: String) extends BasicDAO[Bar](collName)
 
   }
@@ -232,6 +238,21 @@ class PersistenceSpec extends Specification {
       lastError.inError must_== false
       blockForResult(fooDao.find(query)) must have size 0
       blockForResult(fooDao.find(JsObject("age" -> 4.toJson))) must have size 2
+    }
+  }
+
+  "renameFields" should {
+    "rename all models that match the query" in new MongoScope {
+      val fooDao = new FooDAO("renameFields")
+      val fooYearsDao = new FooYearsDAO("renameFields")
+      val added1 = blockForResult(fooDao.add(Foo(id = fooDao.generateId, name = "Foo1", age = 1)))
+      val added2 = blockForResult(fooDao.add(Foo(id = fooDao.generateId, name = "Foo2", age = 3)))
+      val added3 = blockForResult(fooDao.add(Foo(id = fooDao.generateId, name = "Foo3", age = 3)))
+      val query = JsObject("age" -> 3.toJson)
+      val newNames = Map("age" -> "years")
+      val lastError = blockForResult(fooDao.renameFields(newNames, query))
+      lastError.inError must_== false
+      blockForResult(fooYearsDao.find(JsObject("years" -> 3.toJson))) must have size 2
     }
   }
 

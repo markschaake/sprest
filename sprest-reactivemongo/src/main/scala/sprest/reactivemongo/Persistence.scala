@@ -17,6 +17,7 @@ import reactivemongo.bson._
 import reactivemongo.bson.{ BSONReader, BSONWriter }
 import reactivemongo.bson.DefaultBSONHandlers._
 import spray.json._
+import spray.json.DefaultJsonProtocol._
 
 case class Sort(fieldName: String, direction: Sort.SortDirection)
 object Sort {
@@ -138,6 +139,16 @@ trait ReactiveMongoPersistence {
       */
     def updateWhere(query: JsObject, fields: JsObject)(implicit ec: ExecutionContext): Future[LastError] =
       collection.update(query, JsObject("$set" -> fields), multi = true)
+
+    /** Renames fields for all models that match the `query` with the new field names
+      * @param newNames map of old-name (key) to new-name (value). Nested fields can be
+      *   renamed via the dot notation, e.g. Map('foo.bar' -> 'foo.baz')
+      * @param query   mongodb query object, defaults to all
+      */
+    def renameFields(newNames: Map[String, String], query: JsObject = JsObject())(implicit ec: ExecutionContext): Future[LastError] = {
+      val rename = JsObject(newNames.mapValues(_.toJson))
+      collection.update(query, JsObject("$rename" -> rename), multi = true)
+    }
 
     /** Updates the fields of the model with the corresponding `id`
       * @param id
