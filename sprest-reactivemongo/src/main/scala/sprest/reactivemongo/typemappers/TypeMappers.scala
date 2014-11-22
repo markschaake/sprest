@@ -51,7 +51,7 @@ trait NormalizedIdTransformer extends IdElementNameTransformer {
 }
 
 trait SprayJsonTypeMapper extends BSONTypeMapper[JsValue] {
-  def toBSON(json: JsValue) = json match {
+  def toBSON(json: JsValue) : BSONValue = json match {
     case JsString(value) => BSONString(value)
     case JsNumber(num) =>
       if (num.isValidInt) BSONInteger(num.intValue)
@@ -64,15 +64,15 @@ trait SprayJsonTypeMapper extends BSONTypeMapper[JsValue] {
     case JsObject(fields) => BSONDocument(fields.toList.map(entry => transformForBSON(entry._1) -> toBSON(entry._2)))
   }
 
-  def fromBSON(bson: BSONValue) = bson match {
+  def fromBSON(bson: BSONValue) : JsValue = bson match {
     case BSONString(value)     => JsString(value)
     case BSONDouble(value)     => JsNumber(value)
     case BSONInteger(value)    => JsNumber(value)
     case BSONLong(value)       => JsNumber(value)
     case BSONBoolean(value)    => JsBoolean(value)
     case BSONNull              => JsNull
-    case arr: BSONArray        => JsArray(arr.values.map(fromBSON).toList)
-    case bsonDoc: BSONDocument => JsObject(bsonDoc.elements.toList.map { (elem => transformFromBSON(elem._1) -> fromBSON(elem._2)) })
+    case arr: BSONArray        => JsArray(arr.values.map(fromBSON).toList: _*)
+    case bsonDoc: BSONDocument => JsObject(bsonDoc.elements.toList.map { (elem => transformFromBSON(elem._1) -> fromBSON(elem._2)) }: _*)
   }
 }
 
