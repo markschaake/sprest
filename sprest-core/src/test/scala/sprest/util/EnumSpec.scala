@@ -18,12 +18,12 @@ class EnumSpec extends Specification {
       FakeEnum.all must have size 3
     }
     "serialize to / from JSON" in {
-      val results =
-        FakeEnum.all.map { industry =>
+      forall(FakeEnum.all) {
+        industry: FakeEnum => {
           val js = industry.toJson
           js.convertTo[FakeEnum] must_== industry
         }
-      results.toSeq
+      }
     }
 
     "fetch by name" in {
