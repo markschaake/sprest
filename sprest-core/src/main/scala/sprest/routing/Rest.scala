@@ -1,8 +1,6 @@
 package sprest.routing
 
 import akka.actor.ActorSystem
-import scala.concurrent.ExecutionContext
-import scala.parallel.Future
 import spray.http.StatusCodes
 import spray.routing._
 import shapeless._
@@ -12,8 +10,6 @@ import spray.httpx.SprayJsonSupport._
 import sprest.models._
 import spray.json.DefaultJsonProtocol._
 import java.util.UUID
-import scala.util.{ Success, Failure }
-import sprest.security.Session
 
 /**
  * Mixin that provides helpers for generating RESTful routes.
