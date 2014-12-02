@@ -1,7 +1,6 @@
 package sprest.reactivemongo
 
 import sprest.models.Model
-import sprest.models.ModelCompanion
 import sprest.models.UniqueSelector
 import sprest.reactivemongo.typemappers.SprayJsonTypeMapper
 
@@ -41,17 +40,17 @@ class PersistenceSpec extends Specification {
     def findByIdQuery(id: String) = JsObject("_id" -> id.toJson)
 
     case class Foo(id: String, name: String, age: Int) extends Model[String]
-    object Foo extends ModelCompanion[Foo, String] {
+    object Foo {
       implicit val jsFormat = jsonFormat3(Foo.apply _)
     }
 
     case class FooYears(id: String, name: String, years: Int) extends Model[String]
-    object FooYears extends ModelCompanion[FooYears, String] {
+    object FooYears {
       implicit val jsFormat = jsonFormat3(FooYears.apply _)
     }
 
     case class Bar(id: String, fullname: String, spec: Double) extends Model[String]
-    object Bar extends ModelCompanion[Bar, String] {
+    object Bar {
       implicit val jsFormat = jsonFormat3(Bar.apply _)
     }
 
