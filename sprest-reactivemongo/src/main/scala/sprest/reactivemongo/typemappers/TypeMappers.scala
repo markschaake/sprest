@@ -71,8 +71,8 @@ trait SprayJsonTypeMapper extends BSONTypeMapper[JsValue] {
     case BSONLong(value)       => JsNumber(value)
     case BSONBoolean(value)    => JsBoolean(value)
     case BSONNull              => JsNull
-    case arr: BSONArray        => JsArray(arr.values.map(fromBSON).toList: _*)
-    case bsonDoc: BSONDocument => JsObject(bsonDoc.elements.toList.map { (elem => transformFromBSON(elem._1) -> fromBSON(elem._2)) }: _*)
+    case arr: BSONArray        => JsArray(arr.values.map(fromBSON).toList)
+    case bsonDoc: BSONDocument => JsObject(bsonDoc.elements.toList.map { (elem => transformFromBSON(elem._1) -> fromBSON(elem._2)) })
   }
 }
 
