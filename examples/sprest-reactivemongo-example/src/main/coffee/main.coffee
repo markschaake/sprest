@@ -8,7 +8,7 @@ window.ToDos = ($scope, $resource, $http) ->
     
   $scope.todos = ToDo.query()
   $scope.addTodo = ->
-    toAdd = new ToDo({text: $scope.todoText, done: false, priority: $scope.todoPriority})
+    toAdd = new ToDo({id: 'new', text: $scope.todoText, done: false, priority: $scope.todoPriority})
     toAdd.$save()
     $scope.todos.push toAdd
     $scope.todoText = null
@@ -27,7 +27,7 @@ window.Reminders = ($scope, $resource) ->
 
   $scope.reminders = Reminder.query()
   $scope.addReminder = ->
-    toAdd = new Reminder({title: $scope.reminderText, remindAt: new Date().getTime()})
+    toAdd = new Reminder({id: 'new', title: $scope.reminderText, remindAt: new Date().getTime()})
     toAdd.$save()
     $scope.reminders.push toAdd
     $scope.reminderText = null

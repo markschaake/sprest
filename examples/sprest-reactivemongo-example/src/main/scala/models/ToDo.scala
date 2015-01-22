@@ -1,6 +1,7 @@
 package sprest.examples.reactivemongo.models
 
 import spray.json._
+import spray.json.DefaultJsonProtocol._
 import sprest.models._
 
 import sprest.util.enum._
@@ -24,11 +25,12 @@ object Priority extends EnumCompanion[Priority] {
     BackBurner)
 }
 
-case class ToDo(text: String, done: Boolean, var id: Option[String] = None, priority: Priority = Priority.Normal) extends Model[String]
+case class ToDo(
+  id: String,
+  text: String,
+  done: Boolean,
+  priority: Priority = Priority.Normal) extends Model[String]
 
-object ToDo extends ModelCompanion[ToDo, String] {
-
+object ToDo {
   implicit val toDoFormat = jsonFormat4(ToDo.apply _)
-
 }
-
