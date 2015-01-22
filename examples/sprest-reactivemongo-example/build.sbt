@@ -4,7 +4,7 @@ resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/release
 
 resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/service/local/repositories/snapshots/content"
 
-resolvers += "Sprest Snapshots" at "http://sprest.io/snapshots"
+resolvers += "Sprest Releases" at "http://sprest.io/releases"
 
 scalaVersion := "2.10.4"
 
@@ -17,7 +17,7 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.1.2",
   "joda-time" % "joda-time" % "2.3",
   "org.joda" % "joda-convert" % "1.6",
-  "sprest" %% "sprest-reactivemongo" % "0.3.4-SNAPSHOT",
+  "sprest" %% "sprest-reactivemongo" % "0.3.8",
   "org.specs2" %% "specs2" % "2.3.10" % "test"
 )
 
