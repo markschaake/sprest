@@ -12,7 +12,7 @@ object BuildSettings {
     organization := "sprest",
     description := "A suite of libraries leveraging Spray",
     startYear := Some(2013),
-    licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+    licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html")),
     scalaVersion := "2.10.4",
     crossScalaVersions := Seq("2.10.4", "2.11.2"),
     resolvers ++= Dependencies.resolutionRepos,
