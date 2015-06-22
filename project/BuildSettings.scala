@@ -4,8 +4,6 @@ import sbtrelease.ReleasePlugin._
 
 object BuildSettings {
 
-  def publishDir(subDir: String) = new File(Path.userHome.absolutePath + s"/projects/sprest-gh-pages/$subDir")
-
   lazy val noPublishing = Seq(
     publish := Nil,
     publishLocal := Nil)
@@ -27,13 +25,8 @@ object BuildSettings {
       "-language:postfixOps",
       "-language:implicitConversions",
       "-Xlog-reflective-calls",
-      "-Ywarn-adapted-args"),
-    publishTo := {
-      if (isSnapshot.value)
-        Some(Resolver.file("file", publishDir("snapshots")))
-      else
-        Some(Resolver.file("file", publishDir("releases")))
-    })
+      "-Ywarn-adapted-args")
+  )
 
   lazy val sprestModuleSettings = basicSettings
 }

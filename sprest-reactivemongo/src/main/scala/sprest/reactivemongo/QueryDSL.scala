@@ -12,7 +12,7 @@ object QueryDSL {
 
   implicit def jsFieldToJsObject(jsField: JsField): JsObject = JsObject(jsField)
 
-  implicit def jsFieldListToJsObjectList(jsFields: List[JsField]): List[JsObject] = jsFields map { jsFieldToJsObject }
+  implicit def jsFieldVectorToJsObjectList(jsFields: Vector[JsField]): Vector[JsObject] = jsFields map { jsFieldToJsObject }
 
   // Query operators
 
@@ -32,24 +32,24 @@ object QueryDSL {
   def $ne[V](fieldNameToValue: (String, V))(implicit jsWriter: JsonWriter[V]): JsField = comparison("$ne", fieldNameToValue)
 
   // Array Comparisons
-  private[this] def arrayComparison[V](operator: String, fieldNameToArray: (String, List[V]))(implicit jsWriter: JsonWriter[V]) =
+  private[this] def arrayComparison[V](operator: String, fieldNameToArray: (String, Vector[V]))(implicit jsWriter: JsonWriter[V]) =
     fieldNameToArray._1 -> JsObject(
       operator -> JsArray(fieldNameToArray._2.map(jsWriter.write(_))))
 
-  def $all[V](fieldNameToArray: (String, List[V]))(implicit jsWriter: JsonWriter[V]): JsField = arrayComparison("$all", fieldNameToArray)
-  def $in[V](fieldNameToArray: (String, List[V]))(implicit jsWriter: JsonWriter[V]): JsField = arrayComparison("$in", fieldNameToArray)
-  def $nin[V](fieldNameToArray: (String, List[V]))(implicit jsWriter: JsonWriter[V]): JsField = arrayComparison("$nin", fieldNameToArray)
+  def $all[V](fieldNameToArray: (String, Vector[V]))(implicit jsWriter: JsonWriter[V]): JsField = arrayComparison("$all", fieldNameToArray)
+  def $in[V](fieldNameToArray: (String, Vector[V]))(implicit jsWriter: JsonWriter[V]): JsField = arrayComparison("$in", fieldNameToArray)
+  def $nin[V](fieldNameToArray: (String, Vector[V]))(implicit jsWriter: JsonWriter[V]): JsField = arrayComparison("$nin", fieldNameToArray)
 
   def $elemMatch(arrayField: String, matchExpressions: JsField*): JsField =
     arrayField -> JsObject("$elemMatch" -> JsObject(matchExpressions: _*))
 
   // Logical
-  private[this] def logicalSequence(operator: String, expressions: List[JsObject]): JsField =
+  private[this] def logicalSequence(operator: String, expressions: Vector[JsObject]): JsField =
     operator -> JsArray(expressions)
 
-  def $or(expressions: List[JsField]): JsField = logicalSequence("$or", expressions)
-  def $nor(expressions: List[JsField]): JsField = logicalSequence("$nor", expressions)
-  def $and(expressions: List[JsField]): JsField = logicalSequence("$and", expressions)
+  def $or(expressions: Vector[JsField]): JsField = logicalSequence("$or", expressions)
+  def $nor(expressions: Vector[JsField]): JsField = logicalSequence("$nor", expressions)
+  def $and(expressions: Vector[JsField]): JsField = logicalSequence("$and", expressions)
   def $not(expression: JsObject) = "$not" -> expression
 
   // Update operators
@@ -62,7 +62,7 @@ object QueryDSL {
 
   def $rename(oldToNew: (String, String)*): JsField =
     "$rename" -> JsObject(
-      oldToNew.map(tup => tup._1 -> tup._2.toJson).toList)
+      oldToNew.map(tup => tup._1 -> tup._2.toJson).toMap)
 
   def $inc(fieldNameToAmount: (String, Int)): JsField =
     "$inc" -> JsObject(
