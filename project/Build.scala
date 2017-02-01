@@ -21,12 +21,14 @@ object Build extends Build {
       compile(sprayJson) ++
       compile(joda) ++
       compile(jodaConvert) ++
+      test(scalazStreams) ++
       test(specs2) ++
       test(sprayTestKit))
 
   lazy val sprestTestKit = Project("sprest-testkit", file("sprest-testkit"))
     .settings(sprestModuleSettings: _*)
     .settings(libraryDependencies ++=
+      compile(scalazStreams) ++
       compile(specs2) ++
       compile(sprayTestKit) ++
       compile(akkaTestKit))
@@ -40,5 +42,6 @@ object Build extends Build {
       compile(reactiveMongo) ++
       compile(joda) ++
       compile(jodaConvert) ++
+      testAndIt(scalazStreams) ++
       testAndIt(specs2))
 }

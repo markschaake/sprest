@@ -27,7 +27,8 @@ object Dependencies {
   val logback = "ch.qos.logback" % "logback-classic" % "1.1.2"
   val joda = "joda-time" % "joda-time" % "2.3"
   val jodaConvert = "org.joda" % "joda-convert" % "1.6"
-  val specs2 = "org.specs2" %% "specs2" % "2.3.10"
+  val scalazStreams = "org.scalaz.stream" %% "scalaz-stream" % "0.7.2"
+  val specs2 = "org.specs2" %% "specs2" % "2.3.11"
   val akkaActor = akkaModule("akka-actor")
   val akkaTestKit = akkaModule("akka-testkit")
   val reactiveMongo = "org.reactivemongo" %% "reactivemongo" % "0.10.5.0.akka23"

@@ -18,7 +18,7 @@ Provides:
 Provides [ReactiveMongo](http://reactivemongo.org/) DAO implementation.
 
 ## SBT ##
-Sprest is published to Bintray and is available on JCenter. To use it, add on of the following resolvers:
+Sprest is published to Bintray for scala 2.10 and 2.11, and is available on JCenter. To use it, add on of the following resolvers:
 
     resolvers += Resolver.bintrayRepo("markschaake", "maven")
     -- or --
@@ -26,7 +26,7 @@ Sprest is published to Bintray and is available on JCenter. To use it, add on of
 
 Then you can include sprest libraries:
 
-    libraryDependencies += "sprest" %% "sprest-core" % "0.3.9"
-    libraryDependencies += "sprest" %% "sprest-reactivemongo" % "0.3.9"
+    libraryDependencies += "sprest" %% "sprest-core" % "0.3.12"
+    libraryDependencies += "sprest" %% "sprest-reactivemongo" % "0.3.12"
 
 Note: it is unnecessary to explicitly declare the "sprest-core" dependency if you declare a dependency on a library that depends upon the core (such as sprest-slick or sprest-reactivemongo).
