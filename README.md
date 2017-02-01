@@ -1,3 +1,5 @@
+**Notice: this project is no longer maintained**
+
 ## Sprest - companion libraries to Spray ##
 
 [![Build Status](https://travis-ci.org/markschaake/sprest.png)](https://travis-ci.org/markschaake/sprest)
